@@ -43,9 +43,9 @@ class TrainDataDeepJet(TrainData):
             dtype=float
             )
         
-        self.remove=False
+        
              
-        self.reduceTruth()
+        self.reduceTruth(None)
         
         
     def getFlavourClassificationData(self,filename,TupleMeanStd, weighter):

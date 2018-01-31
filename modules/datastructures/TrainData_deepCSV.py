@@ -3,7 +3,7 @@ Created on 21 Feb 2017
 
 @author: jkiesele
 '''
-from TrainData import TrainData_Flavour, TrainData_simpleTruth, TrainData_fullTruth, fileTimeOut
+from TrainDataDeepJet import TrainData_Flavour, TrainData_simpleTruth, TrainData_fullTruth, fileTimeOut
 
 
 

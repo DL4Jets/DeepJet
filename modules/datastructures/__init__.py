@@ -9,14 +9,10 @@ modules = [basename(i.replace('.py','')) for i in glob('%s/[A-Za-z]*.py' % dirna
 __all__ = []
 structure_list=[]
 for module_name in modules:
-    print(module_name)
     module = __import__(module_name, globals(), locals(), [module_name])
     for model_name in [i for i in dir(module) if 'TrainData' in i]:
-        print(model)
         model = getattr(module, model_name)
         globals()[model_name] = model
         locals( )[model_name] = model
         __all__.append(model_name)
         structure_list.append(model_name)
-
-print(structure_list)

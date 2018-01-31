@@ -46,7 +46,7 @@ if newtraining:
 print(train.keras_model.summary())
 #printLayerInfosAndWeights(train.keras_model)
 
-model,history = train.trainModel(nepochs=63, #sweet spot from looking at the testing plots 
+model,history = train.trainModel(nepochs=1, #sweet spot from looking at the testing plots 
                                  batchsize=10000, 
                                  stop_patience=300, 
                                  lr_factor=0.8, 
