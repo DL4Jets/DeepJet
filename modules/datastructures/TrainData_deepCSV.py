@@ -109,9 +109,9 @@ class TrainData_deepCSV_RNN(TrainData_fullTruth):
 
 
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
-        from preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
+        from DeepJetCore.preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
         import numpy
-        from stopwatch import stopwatch
+        from DeepJetCore.stopwatch import stopwatch
         
         sw=stopwatch()
         swall=stopwatch()

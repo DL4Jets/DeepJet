@@ -1,7 +1,7 @@
 
 
-from TrainData import TrainData
-from TrainData import fileTimeOut as tdfto
+from DeepJetCore.TrainData import TrainData
+from DeepJetCore.TrainData import fileTimeOut as tdfto
 import numpy
 
 def fileTimeOut(fileName, timeOut):
@@ -49,7 +49,7 @@ class TrainDataDeepJet(TrainData):
         
         
     def getFlavourClassificationData(self,filename,TupleMeanStd, weighter):
-        from stopwatch import stopwatch
+        from DeepJetCore.stopwatch import stopwatch
         
         sw=stopwatch()
         swall=stopwatch()
@@ -108,7 +108,7 @@ class TrainDataDeepJet(TrainData):
        
     
         
-from preprocessing import MeanNormApply, MeanNormZeroPad
+from DeepJetCore.preprocessing import MeanNormApply, MeanNormZeroPad
 
 class TrainData_Flavour(TrainDataDeepJet):
     '''

@@ -1,8 +1,8 @@
 
 
-from training_base import training_base
+from DeepJetCore.training.training_base import training_base
 from Losses import loss_NLL, loss_meansquared
-from modelTools import fixLayersContaining,printLayerInfosAndWeights
+from DeepJetCore.modeltools import fixLayersContaining,printLayerInfosAndWeights
 
 #also does all the parsing
 train=training_base(testrun=False)

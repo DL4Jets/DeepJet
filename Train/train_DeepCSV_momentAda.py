@@ -1,6 +1,6 @@
-from training_base import training_base
+from DeepJetCore.training.training_base import training_base
 from Losses import nd_moment_loss
-from MultiDataCollection import MultiDataCollection
+from DeepJetCore.MultiDataCollection import MultiDataCollection
 from pdb import set_trace
 
 #also does all the parsing

@@ -2,7 +2,7 @@
 export DEEPJETCORE=../DeepJetCore
 
 THISDIR=`pwd`
-cd $DEEPJETCORE/environment
+cd $DEEPJETCORE
 source gpu_env.sh
 cd $THISDIR
 export PYTHONPATH=`pwd`/modules:$PYTHONPATH

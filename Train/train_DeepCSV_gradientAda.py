@@ -1,5 +1,5 @@
-from training_base import training_base
-from MultiDataCollection import MultiDataCollection
+from DeepJetCore.training.training_base import training_base
+from DeepJetCore.MultiDataCollection import MultiDataCollection
 from pdb import set_trace
 
 #also does all the parsing

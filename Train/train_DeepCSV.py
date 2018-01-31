@@ -1,6 +1,6 @@
 
 
-from training_base import training_base
+from DeepJetCore.training.training_base import training_base
 from Losses import loss_NLL
 
 #also does all the parsing

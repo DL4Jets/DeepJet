@@ -92,9 +92,9 @@ class TrainData_deepFlavour_FT(TrainData_fullTruth):
         
        
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
-        from preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
+        from DeepJetCore.preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
         import numpy
-        from stopwatch import stopwatch
+        from DeepJetCore.stopwatch import stopwatch
         
         sw=stopwatch()
         swall=stopwatch()
@@ -255,9 +255,9 @@ class TrainData_deepFlavour_FT_reg(TrainData_fullTruth):
         
        
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
-        from preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
+        from DeepJetCore.preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
         import numpy
-        from stopwatch import stopwatch
+        from DeepJetCore.stopwatch import stopwatch
         
         sw=stopwatch()
         swall=stopwatch()
@@ -358,9 +358,9 @@ class TrainData_deepFlavour_FT_reg_noScale(TrainData_deepFlavour_FT_reg):
         TrainData_deepFlavour_FT_reg.__init__(self)
         
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
-        from preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
+        from DeepJetCore.preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
         import numpy
-        from stopwatch import stopwatch
+        from DeepJetCore.stopwatch import stopwatch
         
         sw=stopwatch()
         swall=stopwatch()
@@ -534,9 +534,9 @@ class TrainData_deepFlavour_QGOnly_reg(TrainData_QGOnly):
         
        
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
-        from preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
+        from DeepJetCore.preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
         import numpy
-        from stopwatch import stopwatch
+        from DeepJetCore.stopwatch import stopwatch
         
         sw=stopwatch()
         swall=stopwatch()
@@ -651,9 +651,9 @@ class TrainData_deepFlavour_FT_map(TrainData_deepFlavour_FT):
         
        
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
-        from preprocessing import MeanNormApply,createCountMap,createDensity, MeanNormZeroPad, createDensityMap, MeanNormZeroPadParticles
+        from DeepJetCore.preprocessing import MeanNormApply,createCountMap,createDensity, MeanNormZeroPad, createDensityMap, MeanNormZeroPadParticles
         import numpy
-        from stopwatch import stopwatch
+        from DeepJetCore.stopwatch import stopwatch
         
         sw=stopwatch()
         swall=stopwatch()
@@ -810,9 +810,9 @@ class TrainData_deepFlavour_FT_map_reg(TrainData_deepFlavour_FT_map):
         
        
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
-        from preprocessing import MeanNormApply,createCountMap,createDensity, MeanNormZeroPad, createDensityMap, MeanNormZeroPadParticles
+        from DeepJetCore.preprocessing import MeanNormApply,createCountMap,createDensity, MeanNormZeroPad, createDensityMap, MeanNormZeroPadParticles
         import numpy
-        from stopwatch import stopwatch
+        from DeepJetCore.stopwatch import stopwatch
         
         sw=stopwatch()
         swall=stopwatch()
@@ -976,9 +976,9 @@ class TrainData_image(TrainData_fullTruth):
         self.registerBranches([self.regtruth,self.regreco])
        
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
-        from preprocessing import MeanNormApply, MeanNormZeroPad, createDensityMap,createCountMap, MeanNormZeroPadParticles
+        from DeepJetCore.preprocessing import MeanNormApply, MeanNormZeroPad, createDensityMap,createCountMap, MeanNormZeroPadParticles
         import numpy
-        from stopwatch import stopwatch
+        from DeepJetCore.stopwatch import stopwatch
         
         sw=stopwatch()
         swall=stopwatch()
@@ -1217,9 +1217,9 @@ class TrainData_deepFlavour_cleanBTVOnly(TrainData_fullTruth):
         self.regressiontargetclasses=['uncPt','Pt']
 
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
-        from preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
+        from DeepJetCore.preprocessing import MeanNormApply, MeanNormZeroPad, MeanNormZeroPadParticles
         import numpy
-        from stopwatch import stopwatch
+        from DeepJetCore.stopwatch import stopwatch
         
         sw=stopwatch()
         swall=stopwatch()
