@@ -1,60 +1,21 @@
 
 
-DeepJet: Repository for training and evaluation of deep neural networks for HEP
+DeepJet: Repository for training and evaluation of deep neural networks for Jet identification
 ===============================================================================
 
+This package depends on DeepJetCore (https://github.com/DL4Jets/DeepJetCore)
 
 Setup (CERN)
 ==========
-It is essential to perform all these steps on lxplus7. Simple ssh to 'lxplus7' instead of 'lxplus'
 
-Pre-Installtion: Anaconda setup (only once)
-Download miniconda3
-```
-cd <afs work directory: you need some disk space for this!>
-wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-```
-Please follow the installation process. If you don't know what an option does, please answer 'yes'.
-After installation, you have to log out and log in again for changes to take effect.
-If you don't use bash, you might have to add the conda path to your .rc file
-```
-export PATH="<your miniconda directory>/miniconda3/bin:$PATH"
-```
-This has to be only done once.
-
-
-Installation:
-
-```
-mkdir <your working dir>
-cd <your working dir>
-git clone https://github.com/mstoye/DeepJet
-cd DeepJet/environment
-./setupEnv.sh deepjetLinux3.conda
-```
-For enabling gpu support add 'gpu' as an additional option to the last command.
-This will take a while. Please log out and in again once the installation is finised.
-
-When the installation was successful, the DeepJet tools need to be compiled.
-```
-cd <your working dir>
-cd DeepJet/environment
-source lxplus_env.sh / gpu_env.sh
-cd ../modules
-make -j4
-```
-
-After successfully compiling the tools, log out and in again.
-The environment is set up.
-
+The DeepJet package and DeepJetCore have to share the same parent directory
 
 Usage
 ==============
 
 After logging in, please source the right environment (please cd to the directory first!):
 ```
-cd <your working dir>/DeepJet/environment
+cd <your working dir>/DeepJet
 source lxplus_env.sh / gpu_env.sh
 ```
 
@@ -62,18 +23,13 @@ source lxplus_env.sh / gpu_env.sh
 The preparation for the training consists of the following steps
 ====
 
-- define the data structure for the training (example in modules/TrainData_template.py)
+- define the data structure for the training (example in modules/datastructures/TrainData_template.py)
   for simplicity, copy the file to TrainData_template.py and adjust it. 
   Define a new class name (e.g. TrainData_template), leave the inheritance untouched
   
-- register this class in DeepJet/convertFromRoot/convertFromRoot.py by 
-  a) importing it (the line in the code is indiacted by a comment)
-  b) adding it to the class list below
-
-- convert the root file to the data strucure for training:
+- convert the root file to the data strucure for training using DeepJetCore tools:
   ```
-  cd DeepJet/convertFromRoot
-  ./convertFromRoot.py -i /path/to/the/root/ntuple/list_of_root_files.txt -o /output/path/that/needs/some/disk/space -c TrainData_myclass
+  convertFromRoot.py -i /path/to/the/root/ntuple/list_of_root_files.txt -o /output/path/that/needs/some/disk/space -c TrainData_myclass
   ```
   
   This step can take a while.
@@ -118,8 +74,7 @@ The evaluation consists of a few steps:
 
 1) converting the test data
 ```
-cd DeepJet/convertFromRoot
-./convertFromRoot.py --testdatafor <output dir of training>/trainsamples.dc -i /path/to/the/root/ntuple/list_of_test_root_files.txt -o /output/path/for/test/data
+convertFromRoot.py --testdatafor <output dir of training>/trainsamples.dc -i /path/to/the/root/ntuple/list_of_test_root_files.txt -o /output/path/for/test/data
 ```
 
 2) applying the trained model to the test data
