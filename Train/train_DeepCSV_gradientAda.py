@@ -10,8 +10,6 @@ norm = float(sizes[2])/sizes[1] #normalization because samples have different si
 train.train_data.setFlags([[1,0], [0,norm], [0,1]])
 train.train_data.addYs([[0], [1], [0]])
 
-evt = train.train_data.generator().next()
-set_trace()
 train.val_data.setFlags([[1,0], [0,norm], [0,1]])
 train.val_data.addYs([[0], [1], [0]])
 

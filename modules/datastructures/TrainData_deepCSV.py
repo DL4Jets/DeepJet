@@ -4,7 +4,7 @@ Created on 21 Feb 2017
 @author: jkiesele
 '''
 from TrainDataDeepJet import TrainData_Flavour, TrainData_simpleTruth, TrainData_fullTruth, fileTimeOut
-
+import numpy as np
 
 
 class TrainData_deepCSV(TrainData_Flavour, TrainData_simpleTruth):
@@ -55,7 +55,7 @@ class TrainData_deepCSV(TrainData_Flavour, TrainData_simpleTruth):
         flav_sum = ys.sum(axis=1)
         if (flav_sum > 1).any():
         	raise ValueError('In file: %s I get a jet with multiple flavours assigned!' % filename)
-        mask = (flav_sum == 1)
+        mask = (flav_sum == 1) if self.remove else (np.ones(flav_sum.shape[0]) == 1)
         self.x = [self.x[0][mask]]
         self.y = [self.y[0][mask]]
         self.w = [self.w[0][mask]]
