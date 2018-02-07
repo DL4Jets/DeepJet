@@ -6,6 +6,22 @@ global_loss_list={}
 
 #whenever a new loss function is created, please add it to the global_loss_list dictionary!
 
+def binary_crossentropy_labelweights(y_pred, y_true):
+    """ The input needs two different samples that are one hot encoded, e.g. real data and simulation. Data and simulation can differ in the label proportions of some other quantity, e.g. bs vs gluon jets. The loss allows to change the label proportion in the "MC" dataset (or bag) via an input feature.
+        """
+    # the prediction if it is data or MC
+    y_predict = y_pred[:,:1]
+    # the truth if it is data or MC
+    y_true_data = y_true[:,:1]
+    # the label (e.g. b or not) for MC, else 0 (for data and for not a b)
+    y_true_label = y_true[:,1:]
+    # the correction of the weight for MC, where the label is true
+    y_pred_delta = y_pred[:,1:]
+    # Apply correction if it is the MC label==1 and it is MC and add one
+    y_weight = K.clip(y_pred_delta*y_true_label,-0.8,3)+1
+    return K.sum( y_weight*K.binary_crossentropy(y_true_data, y_predict) , axis=-1)/K.sum(y_weight, axis=-1)
+
+global_loss_list['binary_crossentropy_labelweights']=binary_crossentropy_labelweights
 
 def huberishLoss_noUnc(y_true, x_pred):
     
