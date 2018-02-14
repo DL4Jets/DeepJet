@@ -6,8 +6,48 @@ global_loss_list={}
 
 #whenever a new loss function is created, please add it to the global_loss_list dictionary!
 
+
+def weighted_loss(loss_function, clipmin = 0., clipmax = None):
+    """
+        
+        A function to get a weighted loss, where the weights comes from the NN output. This is useful with repect to the standard way to add sample weights in Keras,
+        as the weight corrections can be an model parameter of the NN. Thus one can "fit" weigths.
+        One can as well change the weight for samples during training if one wants to have the weights as input to the NN and learn the NN dependency on the weights
+        If none of the above applyies use the sample_weights of fit in Keras
+        
+        loss_function:  1Dtensor loss_function(...)
+        
+        This allows to build a weighted loss function for the loss K.function, e.g. keras.backend.binary_crossentropy.
+        Attention: the loss_function must return a 1D tensor of batchsize, i.e. it must NOT be the loss per batch (no K.mean())!
+        
+        clipmin = 0., clipmax = None
+        The applied weights can be clipped to reasonable values, it must not be smaller than 0
+        
+        """
+        if (clipmin<0.):
+            raise ValueError('The correct weights must be greater than one, i.e. clipmin is %f , but must be positive' % (clipmin))
+                    
+        def weighted_loss_function(y_dweight_pred, y_true):
+            """
+                y_weight_pred[:,1:] , i.e. first column is the weight correction to a weight of one
+                y_weight_pred[:,:1] are the targets, e.g. labels to classify or floats to regress ...
+                """
+            # apply weight correction to wight one and clip
+            weight = K.clip(y_dweight_pred[:,:1]+1.,clipmin,clipmax)
+            # remove weights from prediction
+            y_pred = y_dweight_pred[:,1:]
+            # return weighted loss
+            return K.sum( weight*loss_function( y_true,y_pred) , axis=-1)/K.sum(weight, axis=-1)
+                                            
+        return weighted_loss_function
+
+
+
 def binary_crossentropy_labelweights(y_pred, y_true):
-    """ The input needs two different samples that are one hot encoded, e.g. real data and simulation. Data and simulation can differ in the label proportions of some other quantity, e.g. bs vs gluon jets. The loss allows to change the label proportion in the "MC" dataset (or bag) via an input feature.
+    """ 
+        Depricated: Tested and working, yet you can use weighted_loss to (see above) to decorate K.binary_crossentropy instead
+        
+        The input needs two different samples that are one hot encoded, e.g. real data and simulation. Data and simulation can differ in the label proportions of some other quantity, e.g. bs vs gluon jets. The loss allows to change the label proportion in the "MC" dataset (or bag) via an input feature.
         """
     # the prediction if it is data or MC
     y_predict = y_pred[:,:1]
