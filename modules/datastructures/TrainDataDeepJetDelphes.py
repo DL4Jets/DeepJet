@@ -46,7 +46,6 @@ class TrainDataDeepJetDelphes(TrainData):
             dtype=float
             )
         
-        
              
         self.reduceTruth(None)
         
