@@ -54,21 +54,25 @@ class TrainData_DelphesDomAdaPerBatch(TrainDataDeepJetDelphes):
         
         self.addBranches(['track_releta', 'track_sip3D', 'track_sip2D'], 10) #all those for the first 10 tracks
         
+        self.registerBranches(['isMC','isTtbar'])
         #creates label weights per batch
         #due to normalisation, two are sufficient for 3 labels (B, C UDSG)
-        self.generatePerBatch=[[0.2,5.],[0.2,5.]]
+        #self.generatePerBatch=[[0.2,5.],[0.2,5.]]
         
 
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
-        
-        weights,x_all,alltruth, notremoves =self.getFlavourClassificationData(filename,TupleMeanStd, weighter)
-        
         import numpy
         
         Tuple = self.readTreeFromRootToTuple(filename)
         
         mclabel=Tuple['isMC'].view(numpy.ndarray)
+        mclabel=mclabel.reshape(mclabel.shape[0],1)
         proclabel=Tuple['isTtbar'].view(numpy.ndarray)
+        proclabel=proclabel.reshape(mclabel.shape[0],1)
+        
+       
+        weights,x_all,alltruth, notremoves =self.getFlavourClassificationData(filename,TupleMeanStd, weighter)
+        
         
         if self.remove:
             #print('remove')
@@ -76,12 +80,17 @@ class TrainData_DelphesDomAdaPerBatch(TrainDataDeepJetDelphes):
             proclabel=proclabel[notremoves > 0]
             
         
+        
+        domaintruth_datamc=numpy.hstack((mclabel,alltruth))
+        #domaintruth_ttbarqcd=numpy.hstack((proclabel,alltruth))
+        
         self.w=[weights]
         #the label fraction weights are computed on the fly
-        self.x=[x_all]
+        self.x=[x_all, alltruth]
+        
         
         #the truth
-        self.y=[alltruth,mclabel,proclabel]
+        self.y=[alltruth,domaintruth_datamc]
 
 
 
