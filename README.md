@@ -79,7 +79,7 @@ convertFromRoot.py --testdatafor <output dir of training>/trainsamples.dc -i /pa
 
 2) applying the trained model to the test data
 ```
-predict.py <output dir of training>/KERAS_model.py  /output/path/for/test/data/dataCollection.dc <output directory>
+predict.py <output dir of training>/KERAS_model.h5  /output/path/for/test/data/dataCollection.dc <output directory>
 ```
 This creates output trees. and a tree_association.txt file that is input to the plotting tools
 
