@@ -57,7 +57,7 @@ class TrainData_DelphesDomAdaPerBatch(TrainDataDeepJetDelphes):
         self.registerBranches(['isMC','isTtbar'])
         #creates label weights per batch
         #due to normalisation, two are sufficient for 3 labels (B, C UDSG)
-        #self.generatePerBatch=[[0.2,5.],[0.2,5.]]
+        self.generatePerBatch=None #[[0.2,5.],[0.2,5.]]
         
 
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
@@ -82,6 +82,7 @@ class TrainData_DelphesDomAdaPerBatch(TrainDataDeepJetDelphes):
         
         
         domaintruth_datamc=numpy.hstack((mclabel,alltruth))
+        labeltruth=domaintruth_datamc
         #domaintruth_ttbarqcd=numpy.hstack((proclabel,alltruth))
         
         self.w=[weights]
@@ -89,8 +90,9 @@ class TrainData_DelphesDomAdaPerBatch(TrainDataDeepJetDelphes):
         self.x=[x_all, alltruth]
         
         
+        
         #the truth
-        self.y=[alltruth,domaintruth_datamc]
+        self.y=[labeltruth,domaintruth_datamc]
 
 
 

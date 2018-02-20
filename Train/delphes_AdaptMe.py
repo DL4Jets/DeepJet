@@ -5,36 +5,9 @@ from keras.layers import Dense, Dropout, Concatenate, LocallyConnected1D, Reshap
 from keras.models import Model
 
 from Layers import GradientReversal
+from Losses import binary_crossentropy_labelweights_Delphes, binary_crossentropy_MConly_Delphes
 import keras.backend as K
 from keras.layers.core import Reshape
-
-### just for fiddleing around here
-def binary_crossentropy_labelweights_A(y_pred, y_true):
-    """
-    Depricated: Tested and working, yet you can use weighted_loss to (see above) to decorate K.binary_crossentropy instead
-    
-    The input needs two different samples that are one hot encoded, e.g. real data and simulation. Data and simulation can differ in the label proportions of some other quantity, e.g. bs vs gluon jets. The loss allows to change the label proportion in the "MC" dataset (or bag) via an input feature.
-    """
-    
-    
-    # the prediction if it is data or MC is in the first index (see model)
-    isMCpred = y_pred[:,:1]
-    
-    #the weights are in the remaining parts of the vector
-    Weightpred = y_pred[:,1:]
-    # the truth if it is data or MC
-    isMCtrue = y_true[:,:1]
-    # labels: B, C, UDSG - not needed here, but maybe later
-    labels_true = y_true[:,1:]
-
-    #only apply label weight deltas to MC, for data will be 1 (+1)
-    #as a result of locally connected if will be only !=0 for one label
-    weightsum = K.clip(isMCtrue * K.sum(Weightpred, axis=-1) + 1, 0.2, 5)
-    
-    weighted_xentr = weightsum*K.binary_crossentropy(isMCpred, isMCtrue)
-    
-    #sum weight again over all samples
-    return K.sum( weighted_xentr , axis=-1)/K.sum(weightsum, axis=-1)
 
 
 
@@ -52,7 +25,7 @@ def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05):
     Xa= Dense(20, activation='relu')(X)
     
     X = Dense(10, activation='relu')(Xa)
-    labelpred = Dense(nclasses, activation='sigmoid')(X)
+    labelpred = Dense(nclasses, activation='softmax')(X)
     
     Ad = GradientReversal()(Xa)
     Ad = Dense(10, activation='relu')(Ad)
@@ -86,8 +59,8 @@ print 'Setting model'
 train.setModel(myDomAdaptModel,dropoutRate=0.1)
 
 train.compileModel(learningrate=0.003,
-                   loss=['binary_crossentropy',
-                         binary_crossentropy_labelweights_A],
+                   loss=[binary_crossentropy_MConly_Delphes,
+                         binary_crossentropy_labelweights_Delphes],
                    metrics=['accuracy'],
                    loss_weights=[1.,1.])
 
