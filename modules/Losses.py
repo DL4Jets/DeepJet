@@ -1,6 +1,6 @@
 from keras import backend as K
-
 from tensorflow import where, greater, abs, zeros_like, exp
+import tensorflow as tf
 
 global_loss_list={}
 
@@ -23,23 +23,23 @@ def weighted_loss(loss_function, clipmin = 0., clipmax = None):
         clipmin = 0., clipmax = None
         The applied weights can be clipped to reasonable values, it must not be smaller than 0
         
+    """
+    if (clipmin<0.):
+        raise ValueError('The correct weights must be greater than one, i.e. clipmin is %f , but must be positive' % (clipmin))
+                
+    def weighted_loss_function(y_dweight_pred, y_true):
         """
-        if (clipmin<0.):
-            raise ValueError('The correct weights must be greater than one, i.e. clipmin is %f , but must be positive' % (clipmin))
-                    
-        def weighted_loss_function(y_dweight_pred, y_true):
+            y_weight_pred[:,1:] , i.e. first column is the weight correction to a weight of one
+            y_weight_pred[:,:1] are the targets, e.g. labels to classify or floats to regress ...
             """
-                y_weight_pred[:,1:] , i.e. first column is the weight correction to a weight of one
-                y_weight_pred[:,:1] are the targets, e.g. labels to classify or floats to regress ...
-                """
-            # apply weight correction to wight one and clip
-            weight = K.clip(y_dweight_pred[:,:1]+1.,clipmin,clipmax)
-            # remove weights from prediction
-            y_pred = y_dweight_pred[:,1:]
-            # return weighted loss
-            return K.sum( weight*loss_function( y_true,y_pred) , axis=-1)/K.sum(weight, axis=-1)
-                                            
-        return weighted_loss_function
+        # apply weight correction to wight one and clip
+        weight = K.clip(y_dweight_pred[:,:1]+1.,clipmin,clipmax)
+        # remove weights from prediction
+        y_pred = y_dweight_pred[:,1:]
+        # return weighted loss
+        return K.sum( weight*loss_function( y_true,y_pred) , axis=-1)/K.sum(weight, axis=-1)
+                                        
+    return weighted_loss_function
 
 
 
@@ -222,6 +222,46 @@ def mean_log_LaPlace_like(y_true, parameters):
 
 global_loss_list['mean_log_LaPlace_like']=mean_log_LaPlace_like
 
+def nd_moment_factory(nmoments):
+	if not isinstance(nmoments, int) and nmoments < 1:
+		raise ValueError('The number of moments used must be integer and > 1')
+	def nd_moments_(y_true, y_pred):
+		# The below counts the entries in the histogram vector, i.e. the actual mini batch size
+		h_entr = K.sum(y_true,axis=0)
+		  
+		## first moment, it's always there ##
+		# Multiply the histogram vectors with estimated propability y_pred
+		# and sum each histogram vector
+		#Rows: predition classes, Colums: bins
+		Sum = tf.transpose(tf.matmul(
+				tf.transpose(y_true), y_pred
+				)) 
+		  
+		# Devide sum by entries (batch size) (i.e. mean, first moment)
+		Sum /= h_entr
+		
+		# Devide per vector mean by average mean in each class, i.e. now SUM is a vector of the relative deviations from the absolute mean
+		#Rows: bins, Columns: prediction classes
+		Sum = tf.transpose(Sum) / K.mean(y_pred, axis=0)
+		
+		#higer moments: common var
+		y_pred_deviation = y_pred - K.mean(y_pred, axis=0)
+		nsums = [K.mean(K.square(Sum-1))]
+		for idx in range(2, nmoments+1): #from 2 to N (included)
+			isum = tf.transpose(tf.matmul(
+					tf.transpose(y_true), y_pred_deviation**idx
+					))
+			isum /= h_entr
+			isum = tf.transpose(isum)/K.mean(y_pred_deviation**idx, axis=0)
+			nsums.append(K.mean(K.square(isum-1)))
+		return tf.add_n(nsums)
+	return nd_moments_
+		
+for i in range(1, 5):
+	fcn_name = 'nd_%dmoment_loss' % i
+	fcn = nd_moment_factory(i) 
+	fcn.__name__ = fcn_name #because keras checks the function name, not the dictionary entry
+	global_loss_list[fcn_name] = fcn
 
 
 
