@@ -56,6 +56,8 @@ class TrainData_DelphesDomAda(TrainDataDeepJetDelphes):
         labeltruth=domaintruth_datamc
         #domaintruth_ttbarqcd=numpy.hstack((proclabel,alltruth))
         
+        print(alltruth.shape)
+        
         self.w=[weights]
         #the label fraction weights are computed on the fly
         self.x=[x_all, alltruth]

@@ -8,20 +8,20 @@ global_loss_list={}
 
 
 def weighted_loss(loss_function, clipmin = 0., clipmax = None):
-        """
-        
-        A function to get a weighted loss, where the weights comes from the NN output. This is useful with repect to the standard way to add sample weights in Keras,
-        as the weight corrections can be an model parameter of the NN. Thus one can "fit" weigths.
-        One can as well change the weight for samples during training if one wants to have the weights as input to the NN and learn the NN dependency on the weights
-        If none of the above applyies use the sample_weights of fit in Keras
-        
-        loss_function:  1Dtensor loss_function(...)
-        
-        This allows to build a weighted loss function for the loss K.function, e.g. keras.backend.binary_crossentropy.
-        Attention: the loss_function must return a 1D tensor of batchsize, i.e. it must NOT be the loss per batch (no K.mean())!
-        
-        clipmin = 0., clipmax = None
-        The applied weights can be clipped to reasonable values, it must not be smaller than 0
+    """
+    
+    A function to get a weighted loss, where the weights comes from the NN output. This is useful with repect to the standard way to add sample weights in Keras,
+    as the weight corrections can be an model parameter of the NN. Thus one can "fit" weigths.
+    One can as well change the weight for samples during training if one wants to have the weights as input to the NN and learn the NN dependency on the weights
+    If none of the above applyies use the sample_weights of fit in Keras
+    
+    loss_function:  1Dtensor loss_function(...)
+    
+    This allows to build a weighted loss function for the loss K.function, e.g. keras.backend.binary_crossentropy.
+    Attention: the loss_function must return a 1D tensor of batchsize, i.e. it must NOT be the loss per batch (no K.mean())!
+    
+    clipmin = 0., clipmax = None
+    The applied weights can be clipped to reasonable values, it must not be smaller than 0
         
     """
     if (clipmin<0.):
@@ -273,16 +273,19 @@ def binary_crossentropy_labelweights_Delphes(y_true, y_pred):
     """
     """
     
-    
     # the prediction if it is data or MC is in the first index (see model)
     isMCpred = y_pred[:,:1]
     
+    
     #the weights are in the remaining parts of the vector
     Weightpred = y_pred[:,1:]
+    
+    
     # the truth if it is data or MC
     isMCtrue = y_true[:,:1]
     # labels: B, C, UDSG - not needed here, but maybe later
     # labels_true = y_true[:,1:]
+    
 
     #only apply label weight deltas to MC, for data will be 1 (+1)
     #as a result of locally connected if will be only !=0 for one label
@@ -303,8 +306,8 @@ def binary_crossentropy_MConly_Delphes(y_true, y_pred):
     printAll=False
     
     if printAll:
-        y_pred=K.print_tensor(y_pred,' labelpred')
-        y_true=K.print_tensor(y_true,' ytrue')
+        y_pred=K.print_tensor(y_pred,' labelpred ')
+        y_true=K.print_tensor(y_true,' ytrueLabel ')
     
     # the prediction if it is data or MC is in the first index (see model)
     labelpred = y_pred
@@ -320,6 +323,9 @@ def binary_crossentropy_MConly_Delphes(y_true, y_pred):
         labels_true=K.print_tensor(labels_true,' labels')
     
     weighted_xentr = isMCtrue*K.binary_crossentropy(labelpred, labels_true)
+    
+    if printAll:
+        weighted_xentr= K.print_tensor(weighted_xentr,' weighted xent ')
     
     out=K.mean( weighted_xentr )
     #sum weight again over all samples
