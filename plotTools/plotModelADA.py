@@ -1,3 +1,5 @@
+#python plotTools/plotModelADA.py -i  trainOutput/full_info.log
+
 from argparse import ArgumentParser
 
 parser = ArgumentParser('program to convert root tuples to traindata format')
