@@ -93,7 +93,6 @@ class TrainDataDeepJetDelphes(TrainData):
         #print(self.truthclasses)
         alltruth=self.reduceTruth(truthtuple)
         
-        #print(alltruth.shape)
         if self.remove:
             #print('remove')
             weights=weights[notremoves > 0]

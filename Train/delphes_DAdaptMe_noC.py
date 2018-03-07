@@ -5,7 +5,7 @@ from keras.layers import Dense, Dropout, Concatenate, LocallyConnected1D, Reshap
 from keras.models import Model
 
 from Layers import GradientReversal
-from Losses import binary_crossentropy_labelweights_Delphes, binary_crossentropy_MConly_Delphes
+from Losses import binary_crossentropy_labelweights_Delphes, binary_crossentropy_MConly_Delphes, binary_crossentropy_MConly_Delphes_noC
 import keras.backend as K
 from keras.layers.core import Reshape
 
@@ -19,25 +19,25 @@ def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05):
     X = Dense(60, activation='relu',name='classifier_dense0')(X)
     X = Dropout(dropoutRate)(X)
     X = Dense(60, activation='relu',name='classifier_dense1')(X)
+
+    Xa = Dropout(dropoutRate)(X)
+    X = Dense(40, activation='relu',name='classifier_dense2')(Xa)
     X = Dropout(dropoutRate)(X)
-    X = Dense(60, activation='relu',name='classifier_dense2')(X)
+    X = Dense(20, activation='relu',name='classifier_dense3')(X)
     X = Dropout(dropoutRate)(X)
-    Xa= Dense(20, activation='relu',name='classifier_dense3')(X)
-    
-    X = Dense(10, activation='relu',name='classifier_dense4')(Xa)
     #three labels
-    labelpred = Dense(3, activation='softmax',name='classifier_pred')(X)
+    labelpred = Dense(2, activation='sigmoid',name='classifier_pred')(X)
     
     Ad = GradientReversal(name='da_gradrev0')(Xa)
     Ad = Dense(30, activation='relu',name='da_dense0')(Ad)
-    X = Dropout(dropoutRate)(X)
+    Ad = Dropout(dropoutRate)(Ad)
     Ad = Dense(30, activation='relu',name='da_dense1')(Ad)
-    X = Dropout(dropoutRate)(X)
+    Ad = Dropout(dropoutRate)(Ad)
     Ad = Dense(30, activation='relu',name='da_dense2')(Ad)
     Ad = Dense(1,  activation='sigmoid')(Ad)
     
     #make list out of it, three labels from truth - make weights
-    Weight = Reshape((3,1),name='reshape')(Inputs[1])
+    Weight = Reshape((2,1),name='reshape')(Inputs[1])
     
     # one-by-one apply weight to label
     Weight = LocallyConnected1D(1,1, activation='linear',use_bias=False, 
@@ -58,40 +58,46 @@ def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05):
     
 #also does all the parsing
 train=training_base(testrun=False)
-
+#from pdb import set_trace
+#set_trace()
 
 print 'Setting model'
-train.setModel(myDomAdaptModel,dropoutRate=0.1)
+train.setModel(myDomAdaptModel,dropoutRate=0.15)
 
-train.defineCustomPredictionLabels(['prob_isB','prob_isC','prob_isUDSG',
+train.defineCustomPredictionLabels(['prob_isB','prob_isUDSG',
                                     'prob_isMC',
                                     'labweight_0',
-                                    'labweight_1',
-                                    'labweight_2'])
+                                    'labweight_1'])
 
-train.compileModel(learningrate=0.00003,
-                   loss=[binary_crossentropy_MConly_Delphes,
+train.compileModel(learningrate=0.0001,
+                   loss=[binary_crossentropy_MConly_Delphes_noC,
                          binary_crossentropy_labelweights_Delphes],
                    metrics=['accuracy'],
                    loss_weights=[1.,0.])
 
 print(train.keras_model.summary())
 
-model,history = train.trainModel(nepochs=30, 
-                                 batchsize=500, 
+model,history = train.trainModel(nepochs=50, 
+                                 batchsize=2000, 
                                  maxqsize=10,verbose=1)
 
 
-exit()
-train.compileModel(learningrate=0.00001,
-                   loss=[binary_crossentropy_MConly_Delphes,
+
+#import os
+#outFolder = "..//newDAnoC/trainOutput_daAll"
+#os.system("cp %s/full_info.log  %s/full_info_Part1.log" %(outFolder, outFolder));
+
+
+#exit()
+train.compileModel(learningrate=0.0001,
+                   loss=[binary_crossentropy_MConly_Delphes_noC,
                          binary_crossentropy_labelweights_Delphes],
                    metrics=['accuracy'],
                    loss_weights=[1.,1.])
 
 
-model,history = train.trainModel(nepochs=30, 
-                                 batchsize=500, 
+model,history = train.trainModel(nepochs=50, 
+                                 batchsize=2000, 
                                  maxqsize=10)
 
 

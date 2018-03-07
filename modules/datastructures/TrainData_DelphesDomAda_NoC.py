@@ -7,7 +7,7 @@ from TrainDataDeepJetDelphes import TrainDataDeepJetDelphes, fileTimeOut
 
 
 
-class TrainData_DelphesDomAda(TrainDataDeepJetDelphes):
+class TrainData_DelphesDomAda_NoC(TrainDataDeepJetDelphes):
     '''
     example data structure - basis for further developments
     '''
@@ -41,16 +41,28 @@ class TrainData_DelphesDomAda(TrainDataDeepJetDelphes):
         proclabel=Tuple['isTtbar'].view(numpy.ndarray)
         proclabel=proclabel.reshape(mclabel.shape[0],1)
 
-       
+        
         weights,x_all,alltruth, notremoves =self.getFlavourClassificationData(filename,TupleMeanStd, weighter)
+
+        #slicingfrom isB, isC, isUDSG and keep only isB, isUCSG
+        alltruthNoC = alltruth[:,::2]
+        alltruth = alltruthNoC
+       
+        print(' xalltruth= ', alltruth)        
+
 
         print('x_all=', x_all)
         print('x_all.shape=', x_all.shape)        
         
+        #notremoves -= Tuple['isC']
         if self.remove:
             #print('remove')
             mclabel=mclabel[notremoves > 0]
             proclabel=proclabel[notremoves > 0]
+
+        print('post remove')
+        print('x_all=', x_all)
+        print('x_all.shape=', x_all.shape)        
             
         
         
@@ -58,19 +70,19 @@ class TrainData_DelphesDomAda(TrainDataDeepJetDelphes):
         labeltruth=domaintruth_datamc
         #domaintruth_ttbarqcd=numpy.hstack((proclabel,alltruth))
         
-        print(alltruth.shape)
+        print('alltruth.shape = ', alltruth.shape)
         
         self.w=[weights]
         #the label fraction weights are computed on the fly
         self.x=[x_all, alltruth]
         print(' x_all= ', x_all)
-        print(' xalltruth= ', alltruth)        
+
         
         
         #the truth
         self.y=[labeltruth,domaintruth_datamc]
         print(' y= ', labeltruth)
-        #print(' y= ', domaintruth_datamc)
-        #print('domaintruth_datamc.shape', domaintruth_datamc.shape)
+        print(' y= ', domaintruth_datamc)
+        print('domaintruth_datamc.shape', domaintruth_datamc.shape)
 
 
