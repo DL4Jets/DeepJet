@@ -8,22 +8,23 @@ from Layers import GradientReversal
 from Losses import binary_crossentropy_labelweights_Delphes, binary_crossentropy_MConly_Delphes
 import keras.backend as K
 from keras.layers.core import Reshape
+from pdb import set_trace
 
 import keras.backend as K
 
 def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05):
     
-    X = Dense(60, activation='relu') (Inputs[0])#reco inputs
+    X = Dense(60, activation='relu',name='classifier_dense0') (Inputs[0])#reco inputs
     
     X = Dropout(dropoutRate)(X)
-    X = Dense(60, activation='relu',name='classifier_dense0')(X)
-    X = Dropout(dropoutRate)(X)
     X = Dense(60, activation='relu',name='classifier_dense1')(X)
+    X = Dropout(dropoutRate)(X)
+    X = Dense(60, activation='relu',name='classifier_dense2')(X)
 
     Xa = Dropout(dropoutRate)(X)
-    X = Dense(40, activation='relu',name='classifier_dense2')(Xa)
+    X = Dense(40, activation='relu',name='classifier_dense3')(Xa)
     X = Dropout(dropoutRate)(X)
-    X = Dense(20, activation='relu',name='classifier_dense3')(X)
+    X = Dense(20, activation='relu',name='classifier_dense4')(X)
     X = Dropout(dropoutRate)(X)
     #three labels
     labelpred = Dense(3, activation='softmax',name='classifier_pred')(X)
@@ -40,29 +41,41 @@ def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05):
     Weight = Reshape((3,1),name='reshape')(Inputs[1])
     
     # one-by-one apply weight to label
-    Weight = LocallyConnected1D(1,1, activation='linear',use_bias=False, 
-                                name="weight0") (Weight)
+    Weight = LocallyConnected1D(
+			1,1, 
+			activation='linear',use_bias=False, 
+			name="da_weight0") (Weight)
                                                         
     
     Weight= Flatten()(Weight)
     
-    Weight = GradientReversal()(Weight)
+    Weight = GradientReversal(name='da_gradrev1')(Weight)
     
-    Ad = Concatenate(name='domada0')([Ad,Weight]) 
+    Ad = Concatenate(name='da_pred')([Ad,Weight]) 
     
     predictions = [labelpred,Ad]
     model = Model(inputs=Inputs, outputs=predictions)
     return model
     
-    
-    
+
+from argparse import ArgumentParser    
+parser = ArgumentParser('Run the training')
+parser.add_argument('--classifier', action='store_true')
+parser.add_argument('--discriminator', action='store_true')
+parser.add_argument('--domada', action='store_true')
+
 #also does all the parsing
-train=training_base(testrun=False)
-#from pdb import set_trace
-#set_trace()
+train=training_base(
+	testrun=False,
+	parser=parser,
+	resumeSilently=True
+)
+args = train.args
+## set_trace()
 
 print 'Setting model'
-train.setModel(myDomAdaptModel,dropoutRate=0.15)
+if not train.modelSet():
+	train.setModel(myDomAdaptModel,dropoutRate=0.15)
 
 train.defineCustomPredictionLabels(['prob_isB','prob_isC','prob_isUDSG',
                                     'prob_isMC',
@@ -70,35 +83,55 @@ train.defineCustomPredictionLabels(['prob_isB','prob_isC','prob_isUDSG',
                                     'labweight_1',
                                     'labweight_2'])
 
-train.compileModel(learningrate=0.0001,
-                   loss=[binary_crossentropy_MConly_Delphes,
-                         binary_crossentropy_labelweights_Delphes],
-                   metrics=['accuracy'],
-                   loss_weights=[1.,0.])
+if args.classifier:
+	train.compileModel(
+		learningrate=0.0001,
+		loss=[binary_crossentropy_MConly_Delphes,
+					binary_crossentropy_labelweights_Delphes],
+		metrics=['accuracy'],
+		loss_weights=[1.,0.])
 
-print(train.keras_model.summary())
+	print(train.keras_model.summary())
+	model,history = train.trainModel(
+		nepochs=50, 
+		batchsize=2000, 
+		maxqsize=10,verbose=1
+		)
 
-model,history = train.trainModel(nepochs=50, 
-                                 batchsize=2000, 
-                                 maxqsize=10,verbose=1)
+if args.discriminator:
+	from DeepJetCore.modeltools import fixLayersContaining
+	train.keras_model = fixLayersContaining(
+		train.keras_model,
+		'classifier_'
+		)
+	train.compileModel(
+		learningrate=0.0001,
+		loss=[binary_crossentropy_MConly_Delphes,
+					binary_crossentropy_labelweights_Delphes],
+		metrics=['accuracy'],
+		loss_weights=[1.,1.])
 
+	print(train.keras_model.summary())
+	train.trainedepoches = 0
+	model,history = train.trainModel(
+		nepochs=50, 
+		batchsize=2000, 
+		maxqsize=10
+		)
 
-
-#import os
-#outFolder = "../newDA/trainOutput_daAll"
-#os.system("cp %s/full_info.log  %s/full_info_Part1.log" %(outFolder, outFolder));
-
-
-#exit()
-train.compileModel(learningrate=0.0001,
-                   loss=[binary_crossentropy_MConly_Delphes,
-                         binary_crossentropy_labelweights_Delphes],
-                   metrics=['accuracy'],
-                   loss_weights=[1.,1.])
-
-
-model,history = train.trainModel(nepochs=50, 
-                                 batchsize=2000, 
-                                 maxqsize=10)
+if args.domada:
+	train.compileModel(
+		learningrate=0.0001,
+		loss=[binary_crossentropy_MConly_Delphes,
+					binary_crossentropy_labelweights_Delphes],
+		metrics=['accuracy'],
+		loss_weights=[1.,1.]
+		)
+	print(train.keras_model.summary())
+	train.trainedepoches = 0
+	model,history = train.trainModel(
+		nepochs=100, 
+		batchsize=2000, 
+		maxqsize=10)
 
 
