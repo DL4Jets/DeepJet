@@ -1,0 +1,11 @@
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_0.root
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_1.root
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_10.root
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_2.root
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_3.root
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_4.root
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_5.root
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_6.root
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_7.root
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_8.root
+/eos/cms/store/user/amartell/Pheno/converted/merged_sd01p5/ntuple_merged_9.root

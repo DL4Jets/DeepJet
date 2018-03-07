@@ -1,7 +1,7 @@
 from keras import backend as K
 from tensorflow import where, greater, abs, zeros_like, exp
 import tensorflow as tf
-
+from pdb import set_trace
 global_loss_list={}
 
 #whenever a new loss function is created, please add it to the global_loss_list dictionary!
@@ -272,20 +272,34 @@ for i in range(1, 5):
 def binary_crossentropy_labelweights_Delphes(y_true, y_pred):
     """
     """
+
+
+    printAll=False
+
+    if printAll:
+        print('in binary_crossentropy_labelweights_Delphes')
     
     # the prediction if it is data or MC is in the first index (see model)
     isMCpred = y_pred[:,:1]
-    
-    
+
     #the weights are in the remaining parts of the vector
     Weightpred = y_pred[:,1:]
-    
-    
+        
     # the truth if it is data or MC
     isMCtrue = y_true[:,:1]
     # labels: B, C, UDSG - not needed here, but maybe later
     # labels_true = y_true[:,1:]
     
+
+    if printAll:
+        print('isMCpred ', isMCpred)
+        print('Weightpred ', Weightpred)
+        print('isMCtrue ', isMCtrue)
+
+    #if printAll:
+        #Weightpred=K.print_tensor(Weightpred,' Weightpred ')
+        #isMCtrue=K.print_tensor(isMCtrue,' isMCtrue ')
+
 
     #only apply label weight deltas to MC, for data will be 1 (+1)
     #as a result of locally connected if will be only !=0 for one label
@@ -293,8 +307,14 @@ def binary_crossentropy_labelweights_Delphes(y_true, y_pred):
     
     weighted_xentr = weightsum*K.binary_crossentropy(isMCpred, isMCtrue)
     
+    if printAll:
+        print('weightsum', weightsum)
+        print('weighted_xentr', weighted_xentr.get_shape())
+
     #sum weight again over all samples
     return K.sum( weighted_xentr , axis=-1)/K.sum(weightsum, axis=-1)
+
+
 
 global_loss_list['binary_crossentropy_labelweights_Delphes']=binary_crossentropy_labelweights_Delphes
 
@@ -304,10 +324,13 @@ def binary_crossentropy_MConly_Delphes(y_true, y_pred):
     """
     """
     printAll=False
-    
+
     if printAll:
-        y_pred=K.print_tensor(y_pred,' labelpred ')
-        y_true=K.print_tensor(y_true,' ytrueLabel ')
+        print('in binary_crossentropy_MConly_Delphes')
+
+    if printAll:
+        print('y_pred ', y_pred.get_shape())
+        print('y_true ', y_true.get_shape())
     
     # the prediction if it is data or MC is in the first index (see model)
     labelpred = y_pred
@@ -319,13 +342,15 @@ def binary_crossentropy_MConly_Delphes(y_true, y_pred):
     labels_true = y_true[:,1:]
    
     if printAll:
-        isMCtrue=K.print_tensor(isMCtrue,' MCtruth')
-        labels_true=K.print_tensor(labels_true,' labels')
-    
-    weighted_xentr = isMCtrue*K.binary_crossentropy(labelpred, labels_true)
+        print('isMCtrue ', isMCtrue.get_shape())
+        print('labels_true ', labels_true.get_shape())
+
+    #weighted_xentr = isMCtrue*K.binary_crossentropy(labelpred, labels_true)
+    weighted_xentr = isMCtrue*K.categorical_crossentropy(labelpred, labels_true)
     
     if printAll:
-        weighted_xentr= K.print_tensor(weighted_xentr,' weighted xent ')
+        print('weighted_xentr ', weighted_xentr)
+
     
     out=K.mean( weighted_xentr )
     #sum weight again over all samples
@@ -334,6 +359,47 @@ def binary_crossentropy_MConly_Delphes(y_true, y_pred):
 
 
 global_loss_list['binary_crossentropy_MConly_Delphes']=binary_crossentropy_MConly_Delphes
+
+
+
+def binary_crossentropy_MConly_Delphes_noC(y_true, y_pred):
+    """
+    """
+    printAll=False
+
+    if printAll:
+        print('in binary_crossentropy_MConly_Delphes_noC')
+
+    if printAll:
+        print('y_pred ', y_pred.get_shape())
+        print('y_true ', y_true.get_shape())
+    
+    # the prediction if it is data or MC is in the first index (see model)
+    labelpred = y_pred
+    
+    # the truth if it is data or MC, 0 for data
+    
+    isMCtrue = y_true[:,:1]
+    # labels: B, C, UDSG 
+    labels_true = y_true[:,1:]
+   
+    if printAll:
+        print('isMCtrue ', isMCtrue.get_shape())
+        print('labels_true ', labels_true.get_shape())
+
+    weighted_xentr = isMCtrue*K.binary_crossentropy(labelpred, labels_true)
+    
+    if printAll:
+        print('weighted_xentr ', weighted_xentr)
+
+    
+    out=K.mean( weighted_xentr )
+    #sum weight again over all samples
+    return out
+
+
+
+global_loss_list['binary_crossentropy_MConly_Delphes_noC']=binary_crossentropy_MConly_Delphes_noC
 
 
 
