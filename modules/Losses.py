@@ -8,7 +8,7 @@ global_loss_list={}
 
 
 def weighted_loss(loss_function, clipmin = 0., clipmax = None):
-        """
+    """
         
         A function to get a weighted loss, where the weights comes from the NN output. This is useful with repect to the standard way to add sample weights in Keras,
         as the weight corrections can be an model parameter of the NN. Thus one can "fit" weigths.
