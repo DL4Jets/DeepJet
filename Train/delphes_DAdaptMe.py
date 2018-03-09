@@ -14,6 +14,17 @@ from keras.layers.core import Reshape
 import keras.backend as K
 
 
+def setWeightsFixed(model, weightlist):  
+    from DeepJetCore.modeltools import getLayer
+    weightlayer=getLayer(model,"weight0")
+    import numpy as np
+    weightlayer.set_weights([np.array([[[weightlist[0]]],
+                                       [[weightlist[1]]],
+                                       [[weightlist[2]]]],dtype='float32')])
+
+    weightlayer.trainable=False
+
+
 def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05, nodemulti=2):
     
     X = Dense(nodemulti*30, activation='relu') (Inputs[0])#reco inputs
@@ -67,8 +78,7 @@ print 'Setting model'
 
 learningratemulti=40
 dropout=0.4
-lrfactor=0.99
-nodemulti=2 #this is the default model
+lrfactor=0.99 #0.8 for noC
 
 if train.keras_model_method:
     parsedlist=[float(i) for i in train.keras_model_method.split(',')]
@@ -76,14 +86,17 @@ if train.keras_model_method:
     learningratemulti=parsedlist[0]
     dropout=parsedlist[1]
     lrfactor=parsedlist[2]
-    if len(parsedlist)>3:
-        nodemulti=int(parsedlist[3])
 
 print('learningratemulti: '+str(learningratemulti))
 print('dropout: '+str(dropout))
 
 
-train.setModel(myDomAdaptModel,dropoutRate=dropout, nodemulti=nodemulti)
+train.setModel(myDomAdaptModel,dropoutRate=dropout)
+
+
+setWeightsFixed(train.keras_model, [0,.1,.2])
+print(train.keras_model.summary())
+exit()
 
 train.defineCustomPredictionLabels(['prob_isB','prob_isC','prob_isUDSG',
                                     'prob_isMC',
@@ -106,7 +119,8 @@ model,history = train.trainModel(nepochs=150,
                                  batchsize=6000, 
                                  maxqsize=3,
                                  verbose=0,
-                                 lr_patience=5,
+                                 lr_patience=15,
+                                 lr_cooldown=15,
                                  lr_factor=lrfactor
                                  )
 
