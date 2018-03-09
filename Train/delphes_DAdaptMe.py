@@ -1,6 +1,8 @@
 
 
 from DeepJetCore.training.training_base import training_base
+
+
 from keras.layers import Dense, Dropout, Concatenate, LocallyConnected1D, Reshape, Flatten
 from keras.models import Model
 
@@ -11,29 +13,30 @@ from keras.layers.core import Reshape
 
 import keras.backend as K
 
-def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05):
+
+def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05, nodemulti=2):
     
-    X = Dense(60, activation='relu') (Inputs[0])#reco inputs
+    X = Dense(nodemulti*30, activation='relu') (Inputs[0])#reco inputs
     
     X = Dropout(dropoutRate)(X)
-    X = Dense(60, activation='relu',name='classifier_dense0')(X)
+    X = Dense(nodemulti*30, activation='relu',name='classifier_dense0')(X)
     X = Dropout(dropoutRate)(X)
-    X = Dense(60, activation='relu',name='classifier_dense1')(X)
+    X = Dense(nodemulti*30, activation='relu',name='classifier_dense1')(X)
 
     Xa = Dropout(dropoutRate)(X)
-    X = Dense(40, activation='relu',name='classifier_dense2')(Xa)
+    X = Dense(nodemulti*20, activation='relu',name='classifier_dense2')(Xa)
     X = Dropout(dropoutRate)(X)
-    X = Dense(20, activation='relu',name='classifier_dense3')(X)
+    X = Dense(nodemulti*10, activation='relu',name='classifier_dense3')(X)
     X = Dropout(dropoutRate)(X)
     #three labels
     labelpred = Dense(3, activation='softmax',name='classifier_pred')(X)
     
     Ad = GradientReversal(name='da_gradrev0')(Xa)
-    Ad = Dense(30, activation='relu',name='da_dense0')(Ad)
+    Ad = Dense(nodemulti*15, activation='relu',name='da_dense0')(Ad)
     Ad = Dropout(dropoutRate)(Ad)
-    Ad = Dense(30, activation='relu',name='da_dense1')(Ad)
+    Ad = Dense(nodemulti*15, activation='relu',name='da_dense1')(Ad)
     Ad = Dropout(dropoutRate)(Ad)
-    Ad = Dense(30, activation='relu',name='da_dense2')(Ad)
+    Ad = Dense(nodemulti*15, activation='relu',name='da_dense2')(Ad)
     Ad = Dense(1,  activation='sigmoid')(Ad)
     
     #make list out of it, three labels from truth - make weights
@@ -57,12 +60,30 @@ def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05):
     
     
 #also does all the parsing
-train=training_base(testrun=False)
 #from pdb import set_trace
 #set_trace()
-
+train=training_base(testrun=False)
 print 'Setting model'
-train.setModel(myDomAdaptModel,dropoutRate=0.15)
+
+learningratemulti=40
+dropout=0.4
+lrfactor=0.99
+nodemulti=2 #this is the default model
+
+if train.keras_model_method:
+    parsedlist=[float(i) for i in train.keras_model_method.split(',')]
+    
+    learningratemulti=parsedlist[0]
+    dropout=parsedlist[1]
+    lrfactor=parsedlist[2]
+    if len(parsedlist)>3:
+        nodemulti=int(parsedlist[3])
+
+print('learningratemulti: '+str(learningratemulti))
+print('dropout: '+str(dropout))
+
+
+train.setModel(myDomAdaptModel,dropoutRate=dropout, nodemulti=nodemulti)
 
 train.defineCustomPredictionLabels(['prob_isB','prob_isC','prob_isUDSG',
                                     'prob_isMC',
@@ -70,7 +91,9 @@ train.defineCustomPredictionLabels(['prob_isB','prob_isC','prob_isUDSG',
                                     'labweight_1',
                                     'labweight_2'])
 
-train.compileModel(learningrate=0.0001,
+
+
+train.compileModel(learningrate=learningratemulti*0.0001,
                    loss=[binary_crossentropy_MConly_Delphes,
                          binary_crossentropy_labelweights_Delphes],
                    metrics=['accuracy'],
@@ -78,11 +101,18 @@ train.compileModel(learningrate=0.0001,
 
 print(train.keras_model.summary())
 
-model,history = train.trainModel(nepochs=50, 
-                                 batchsize=2000, 
-                                 maxqsize=10,verbose=1)
+
+model,history = train.trainModel(nepochs=150, 
+                                 batchsize=6000, 
+                                 maxqsize=3,
+                                 verbose=0,
+                                 lr_patience=5,
+                                 lr_factor=lrfactor
+                                 )
 
 
+
+exit()
 
 #import os
 #outFolder = "../newDA/trainOutput_daAll"
@@ -90,15 +120,17 @@ model,history = train.trainModel(nepochs=50,
 
 
 #exit()
+
 train.compileModel(learningrate=0.0001,
                    loss=[binary_crossentropy_MConly_Delphes,
                          binary_crossentropy_labelweights_Delphes],
                    metrics=['accuracy'],
-                   loss_weights=[1.,1.])
+                   loss_weights=[1./10,1.])
 
 
-model,history = train.trainModel(nepochs=50, 
+model,history = train.trainModel(nepochs=30, 
                                  batchsize=2000, 
-                                 maxqsize=10)
+                                 maxqsize=3,
+                                 verbose=0)
 
 
