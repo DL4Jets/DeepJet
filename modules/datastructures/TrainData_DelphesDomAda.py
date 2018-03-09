@@ -19,11 +19,11 @@ class TrainData_DelphesDomAda(TrainDataDeepJetDelphes):
         '''
         TrainDataDeepJetDelphes.__init__(self)
 
-        self.addBranches(['jet_pt', 'jet_eta']) #consider jet pt and eta                                                          
+        # self.addBranches(['jet_pt', 'jet_eta']) #consider jet pt and eta                                                          
 
-        self.addBranches(['track_pt'], 5) #consider the pt of the first 6 tracks                                                  
+        # self.addBranches(['track_pt'], 5) #consider the pt of the first 6 tracks                                                  
 
-        self.addBranches(['track_ptRel', 'track_sip3D', 'track_sip2D', 'track_pPar'], 8) #all those for the first 10 tracks       
+        self.addBranches(['track_ptRel', 'track_sip3D', 'track_sip2D', 'track_pPar'], 5) #all those for the first 10 tracks       
 
         self.registerBranches(['isMC','isTtbar'])
         #creates label weights per batch                                                                                          
