@@ -50,7 +50,7 @@ class TrainDataDeepJetDelphes(TrainData):
         self.reduceTruth(None)
         
         
-    def getFlavourClassificationData(self,filename,TupleMeanStd, weighter):
+    def getFlavourClassificationData(self,filename,TupleMeanStd, weighter,useremovehere=True):
         
         
         sw=stopwatch()
@@ -93,7 +93,7 @@ class TrainDataDeepJetDelphes(TrainData):
         #print(self.truthclasses)
         alltruth=self.reduceTruth(truthtuple)
         
-        if self.remove:
+        if self.remove and useremovehere:
             #print('remove')
             weights=weights[notremoves > 0]
             x_all=x_all[notremoves > 0]

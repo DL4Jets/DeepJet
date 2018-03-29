@@ -7,7 +7,7 @@ from TrainDataDeepJetDelphes import TrainDataDeepJetDelphes, fileTimeOut
 
 
 
-class TrainData_DelphesDomAda(TrainDataDeepJetDelphes):
+class TrainData_DelphesDomAda_NoC(TrainDataDeepJetDelphes):
     '''
     example data structure - basis for further developments
     '''
@@ -25,7 +25,7 @@ class TrainData_DelphesDomAda(TrainDataDeepJetDelphes):
 
         self.addBranches(['track_ptRel', 'track_sip3D', 'track_sip2D', 'track_pPar'], 5) #all those for the first 10 tracks       
 
-        self.registerBranches(['isMC','isTtbar'])                                                                         
+        self.registerBranches(['isMC','isTtbar'])                                                                           
         
 
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
@@ -38,36 +38,33 @@ class TrainData_DelphesDomAda(TrainDataDeepJetDelphes):
         proclabel=Tuple['isTtbar'].view(numpy.ndarray)
         proclabel=proclabel.reshape(mclabel.shape[0],1)
 
-       
-        weights,x_all,alltruth, notremoves =self.getFlavourClassificationData(filename,TupleMeanStd, weighter)
-
-        print('x_all=', x_all)
-        print('x_all.shape=', x_all.shape)        
         
-        if self.remove: #only the additional removes
-            #print('remove')
-            mclabel=mclabel[notremoves > 0]
-            proclabel=proclabel[notremoves > 0]
-            
+        weights,x_all,alltruth, notremoves =self.getFlavourClassificationData(filename,
+                                                                              TupleMeanStd, 
+                                                                              weighter,
+                                                                              useremovehere=False)
+
+        before=len(x_all)
+        
+        notremoves -= Tuple['isC'].view(numpy.ndarray)
+        if self.remove:
+            print('remove')
+            mclabel  =  mclabel[notremoves > 0]
+            proclabel=  proclabel[notremoves > 0]
+            weights  =  weights[notremoves > 0]
+            x_all    =  x_all[notremoves > 0]
+            alltruth =  alltruth[notremoves > 0]
+      
+        print('reduced to ', len(x_all), '/', before)
         
         
         domaintruth_datamc=numpy.hstack((mclabel,alltruth))
         labeltruth=domaintruth_datamc
-        #domaintruth_ttbarqcd=numpy.hstack((proclabel,alltruth))
-        
-        print(alltruth.shape)
         
         self.w=[weights]
         #the label fraction weights are computed on the fly
         self.x=[x_all, alltruth]
-        print(' x_all= ', x_all)
-        print(' xalltruth= ', alltruth)        
-        
-        
         #the truth
         self.y=[labeltruth,domaintruth_datamc]
-        print(' y= ', labeltruth)
-        #print(' y= ', domaintruth_datamc)
-        #print('domaintruth_datamc.shape', domaintruth_datamc.shape)
 
 

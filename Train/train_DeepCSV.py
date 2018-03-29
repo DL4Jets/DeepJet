@@ -16,7 +16,7 @@ if not train.modelSet():
                        loss='categorical_crossentropy',
                        metrics=['accuracy'])
 
-
+print(train.keras_model.summary())
 model,history = train.trainModel(nepochs=50, 
                                  batchsize=5000, 
                                  stop_patience=300, 
