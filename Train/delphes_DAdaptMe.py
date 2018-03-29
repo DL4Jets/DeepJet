@@ -5,7 +5,7 @@ from keras.layers import Dense, Dropout, Concatenate, LocallyConnected1D, Reshap
 from keras.models import Model
 
 from Layers import GradientReversal
-from Losses import binary_crossentropy_labelweights_Delphes, binary_crossentropy_MConly_Delphes
+from Losses import binary_crossentropy_labelweights_Delphes, categorical_crossentropy_MConly_Delphes, categorical_crossentropy_dataonly_Delphes
 import keras.backend as K
 from keras.layers.core import Reshape
 from pdb import set_trace
@@ -58,12 +58,15 @@ def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05):
 from argparse import ArgumentParser    
 parser = ArgumentParser('Run the training')
 parser.add_argument('--classifier', action='store_true')
-parser.add_argument('--lockdisc', action='store_true')
 parser.add_argument('--discriminator', action='store_true')
 parser.add_argument('--domada', action='store_true')
+parser.add_argument('--datatraining', action='store_true')
 parser.add_argument('--lambda', type=float, dest='hp_lambda', default=1, help='Gradient reversal scaling')
 parser.add_argument('--classweight', type=float, default=1, help='classification loss weight')
 parser.add_argument('--adaweight', type=float, default=1, help='domain adaptation weight')
+parser.add_argument('--nepochs', type=int, default=50, help='domain adaptation weight')
+parser.add_argument('--learnrate', type=float, default=0.0001, help='domain adaptation weight')
+parser.add_argument('--dropout', type=float, default=0.4, help='domain adaptation weight')
 
 #also does all the parsing
 train=training_base(
@@ -76,7 +79,7 @@ args = train.args
 
 print 'Setting model'
 if not train.modelSet():
-	train.setModel(myDomAdaptModel,dropoutRate=0.15)
+	train.setModel(myDomAdaptModel,dropoutRate=args.dropout)
 
 train.defineCustomPredictionLabels(['prob_isB','prob_isC','prob_isUDSG',
                                     'prob_isMC',
@@ -84,27 +87,48 @@ train.defineCustomPredictionLabels(['prob_isB','prob_isC','prob_isUDSG',
                                     'labweight_1',
                                     'labweight_2'])
 
+## #
+## # Hacky as hell
+## #
+## from DeepJetCore.DataCollection import DataCollection
+## _original_generator = DataCollection.generator
+## def _new_gen(self):
+## 	for x, y in _original_generator(self):
+## 		newy = [y[0], y[0], y[1]]
+## 		yield (x,newy)
+## DataCollection.generator = _new_gen
+
+
 if args.classifier:
-	if args.lockdisc:
-		train.keras_model = set_trainable(
-			train.keras_model,
-			'domada_', False
-			)
+	train.keras_model = set_trainable(
+		train.keras_model,
+		'domada_', False
+		)
 	for layidx in range(len(train.keras_model.layers)):
 		layer = train.keras_model.get_layer(index=layidx)
 		print layer.name, layer.trainable
 	train.compileModel(
-		learningrate=0.0001,
-		loss=[binary_crossentropy_MConly_Delphes,
-					binary_crossentropy_labelweights_Delphes],
+		learningrate=args.learnrate,
+		loss=[
+			categorical_crossentropy_dataonly_Delphes \
+				if args.datatraining else \
+				categorical_crossentropy_MConly_Delphes,
+			binary_crossentropy_labelweights_Delphes],
+		## loss=[
+		## 	categorical_crossentropy_MConly_Delphes,
+		## 	categorical_crossentropy_dataonly_Delphes,
+		## 	binary_crossentropy_labelweights_Delphes],
 		metrics=['accuracy'],
-		loss_weights=[1.,0.])
+		loss_weights=[1.0, 0.]
+		)
 
 	print(train.keras_model.summary())
+	
 	model,history = train.trainModel(
-		nepochs=100, 
-		batchsize=2000, 
-		maxqsize=10,verbose=1
+		nepochs=args.nepochs,
+		batchsize=6000, 
+		maxqsize=10,
+		verbose=1
 		)
 
 if args.discriminator:
@@ -121,17 +145,18 @@ if args.discriminator:
 		print layer.name, layer.trainable
 	
 	train.compileModel(
-		learningrate=0.0001,
-		loss=[binary_crossentropy_MConly_Delphes,
+		learningrate=args.learnrate,
+		loss=[categorical_crossentropy_MConly_Delphes,
 					binary_crossentropy_labelweights_Delphes],
 		metrics=['accuracy'],
-		loss_weights=[1.,1.])
+		loss_weights=[0., 1.]
+		)
 
 	print(train.keras_model.summary())
 	train.trainedepoches = 0
 	model,history = train.trainModel(
-		nepochs=100, 
-		batchsize=2000, 
+		nepochs=args.nepochs,
+		batchsize=6000, 
 		maxqsize=10
 		)
 
@@ -151,8 +176,8 @@ if args.domada:
 		print layidx, layer.name, layer.trainable
 	
 	train.compileModel(
-		learningrate=0.0001,
-		loss=[binary_crossentropy_MConly_Delphes,
+		learningrate=args.learnrate,
+		loss=[categorical_crossentropy_MConly_Delphes,
 					binary_crossentropy_labelweights_Delphes],
 		metrics=['accuracy'],
 		loss_weights=[args.classweight, args.adaweight]
@@ -160,8 +185,8 @@ if args.domada:
 	print(train.keras_model.summary())
 	train.trainedepoches = 0
 	model,history = train.trainModel(
-		nepochs=100, 
-		batchsize=2000, 
+		nepochs=args.nepochs,
+		batchsize=6000, 
 		maxqsize=10)
 
 
