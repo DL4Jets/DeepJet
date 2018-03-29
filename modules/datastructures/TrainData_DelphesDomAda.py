@@ -25,10 +25,7 @@ class TrainData_DelphesDomAda(TrainDataDeepJetDelphes):
 
         self.addBranches(['track_ptRel', 'track_sip3D', 'track_sip2D', 'track_pPar'], 5) #all those for the first 10 tracks       
 
-        self.registerBranches(['isMC','isTtbar'])
-        #creates label weights per batch                                                                                          
-        #due to normalisation, two are sufficient for 3 labels (B, C UDSG)                                                        
-        #self.generatePerBatch=None #[[0.2,5.],[0.2,5.]]                                                                          
+        self.registerBranches(['isMC','isTtbar'])                                                                         
         
 
     def readFromRootFile(self,filename,TupleMeanStd, weighter):
@@ -47,7 +44,7 @@ class TrainData_DelphesDomAda(TrainDataDeepJetDelphes):
         print('x_all=', x_all)
         print('x_all.shape=', x_all.shape)        
         
-        if self.remove:
+        if self.remove: #only the additional removes
             #print('remove')
             mclabel=mclabel[notremoves > 0]
             proclabel=proclabel[notremoves > 0]

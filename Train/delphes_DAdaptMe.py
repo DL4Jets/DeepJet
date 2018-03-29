@@ -1,6 +1,8 @@
 
 
 from DeepJetCore.training.training_base import training_base
+
+
 from keras.layers import Dense, Dropout, Concatenate, LocallyConnected1D, Reshape, Flatten
 from keras.models import Model
 
@@ -13,7 +15,19 @@ from pdb import set_trace
 import keras.backend as K
 from DeepJetCore.modeltools import set_trainable, fixLayersContaining
 
-def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05):
+
+def setWeightsFixed(model, weightlist):  
+    from DeepJetCore.modeltools import getLayer
+    weightlayer=getLayer(model,"weight0")
+    import numpy as np
+    weightlayer.set_weights([np.array([[[weightlist[0]]],
+                                       [[weightlist[1]]],
+                                       [[weightlist[2]]]],dtype='float32')])
+
+    weightlayer.trainable=False
+
+
+def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05, nodemulti=2):
     
     X = Dense(60, activation='relu',name='classifier_dense0') (Inputs[0])#reco inputs    
     X = Dropout(dropoutRate)(X)
@@ -137,7 +151,7 @@ if args.discriminator:
 		'classifier_', False
 		)
 	train.keras_model = set_trainable(
-		train.keras_model,
+v		train.keras_model,
 		'domada_', True
 		)
 	for layidx in range(len(train.keras_model.layers)):

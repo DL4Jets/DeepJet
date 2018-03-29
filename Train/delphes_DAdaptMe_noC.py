@@ -11,6 +11,9 @@ from keras.layers.core import Reshape
 
 import keras.backend as K
 
+print('should not be used! use same as for including Cs')
+exit()
+
 def myDomAdaptModel(Inputs,nclasses,nregclasses,dropoutRate=0.05):
     
     X = Dense(60, activation='relu') (Inputs[0])#reco inputs
