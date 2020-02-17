@@ -1,0 +1,14 @@
+
+#! /bin/bash
+
+export DJSUBPACKAGE=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P)
+export DEEPJETCORE_SUBPACKAGE=$DJSUBPACKAGE
+
+cd $DJSUBPACKAGE
+export PYTHONPATH=$DJSUBPACKAGE/modules:$PYTHONPATH
+export PYTHONPATH=$DJSUBPACKAGE/modules/datastructures:$PYTHONPATH
+export PATH=$DJSUBPACKAGE/scripts:$PATH
+
+export LD_LIBRARY_PATH=$DJSUBPACKAGE/modules/compiled:$LD_LIBRARY_PATH
+export PYTHONPATH=$DJSUBPACKAGE/modules/compiled:$PYTHONPATH
+
