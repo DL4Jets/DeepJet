@@ -2,7 +2,6 @@
 
 from DeepJetCore.TrainData import TrainData, fileTimeOut
 import numpy as np
-from argparse import ArgumentParser
 
 
 class TrainData_DF(TrainData):
