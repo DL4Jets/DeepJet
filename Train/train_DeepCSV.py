@@ -16,9 +16,7 @@ if newtraining:
     from models import model_deepCSV
     
     train.setModel(model_deepCSV,dropoutRate=0.1)
-    
-    #train.keras_model=fixLayersContaining(train.keras_model, 'regression', invert=False)
-    
+        
     train.train_data.maxFilesOpen=1
  
 train.compileModel(learningrate=0.003,
