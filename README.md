@@ -1,7 +1,7 @@
 DeepJet: Repository for training and evaluation of deep neural networks for Jet identification
 ===============================================================================
 
-This package depends on DeepJetCore 2.X (https://github.com/DL4Jets/DeepJetCore).
+This package depends on DeepJetCore 3.X (https://github.com/DL4Jets/DeepJetCore). (but it should still work for DJC2)
 
 Usage
 ==============
