@@ -56,3 +56,31 @@ def model_deepFlavourReference(Inputs,dropoutRate=0.1,momentum=0.6):
     return model
 
 
+def model_deepCSV(Inputs,dropoutRate=0.1):
+    """
+    reference 1x1 convolutional model for 'deepFlavour'
+    with recurrent layers and batch normalisation
+    standard dropout rate it 0.1
+    should be trained for flavour prediction first. afterwards, all layers can be fixed
+    that do not include 'regression' and the training can be repeated focusing on the regression part
+    (check function fixLayersContaining with invert=True)
+    """  
+    globalvars = Inputs[0]
+
+    x = Dense(100, activation='relu',kernel_initializer='lecun_uniform')(Inputs[0])
+    x = Dropout(dropoutRate)(x)
+    x = Dense(100, activation='relu',kernel_initializer='lecun_uniform')(x)
+    x = Dropout(dropoutRate)(x)
+    x = Dense(100, activation='relu',kernel_initializer='lecun_uniform')(x)
+    x = Dropout(dropoutRate)(x)
+    x = Dense(100, activation='relu',kernel_initializer='lecun_uniform')(x)
+    x = Dropout(dropoutRate)(x)
+    x = Dense(100, activation='relu',kernel_initializer='lecun_uniform')(x)
+
+    predictions = Dense(4, activation='softmax',kernel_initializer='lecun_uniform')(x)
+    
+    model = Model(inputs=Inputs, outputs=predictions)
+    return model
+
+
+
