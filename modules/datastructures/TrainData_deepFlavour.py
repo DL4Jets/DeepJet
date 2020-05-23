@@ -114,7 +114,7 @@ class TrainData_DF(TrainData):
                 weighter.addDistributions(nparray)
                 #del nparray
                 counter=counter+1
-                weighter.createRemoveProbabilitiesAndWeights(self.referenceclass)
+            weighter.createRemoveProbabilitiesAndWeights(self.referenceclass)
         return {'weigther':weighter}
     
     def convertFromSourceFile(self, filename, weighterobjects, istraining):
@@ -380,7 +380,7 @@ class TrainData_DeepCSV(TrainData):
                 weighter.addDistributions(nparray)
                 #del nparray
                 counter=counter+1
-                weighter.createRemoveProbabilitiesAndWeights(self.referenceclass)
+            weighter.createRemoveProbabilitiesAndWeights(self.referenceclass)
 
         print("calculate means")
         from DeepJetCore.preprocessing import meanNormProd
