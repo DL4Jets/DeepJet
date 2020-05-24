@@ -114,7 +114,7 @@ class TrainData_DF(TrainData):
                 weighter.addDistributions(nparray)
                 #del nparray
                 counter=counter+1
-                weighter.createRemoveProbabilitiesAndWeights(self.referenceclass)
+            weighter.createRemoveProbabilitiesAndWeights(self.referenceclass)
         return {'weigther':weighter}
     
     def convertFromSourceFile(self, filename, weighterobjects, istraining):
@@ -225,7 +225,7 @@ class TrainData_DF(TrainData):
 
         
         print('remove nans')
-        x_global = np.where(np.isfinite(x_global), x_global, 0)
+        x_global = np.where(np.isfinite(x_global) , x_global, 0)
         x_cpf = np.where(np.isfinite(x_cpf), x_cpf, 0)
         x_npf = np.where(np.isfinite(x_npf), x_npf, 0)
         x_vtx = np.where(np.isfinite(x_vtx), x_vtx, 0)
@@ -267,6 +267,7 @@ class TrainData_DeepCSV(TrainData):
         )
 
         self.global_branches = ['jet_pt', 'jet_eta',
+                                'TagVarCSV_jetNSecondaryVertices', 
                                 'TagVarCSV_trackSumJetEtRatio',
                                 'TagVarCSV_trackSumJetDeltaR',
                                 'TagVarCSV_vertexCategory',
@@ -379,7 +380,7 @@ class TrainData_DeepCSV(TrainData):
                 weighter.addDistributions(nparray)
                 #del nparray
                 counter=counter+1
-                weighter.createRemoveProbabilitiesAndWeights(self.referenceclass)
+            weighter.createRemoveProbabilitiesAndWeights(self.referenceclass)
 
         print("calculate means")
         from DeepJetCore.preprocessing import meanNormProd
@@ -400,7 +401,6 @@ class TrainData_DeepCSV(TrainData):
         from DeepJetCore.stopwatch import stopwatch
         sw=stopwatch()
         swall=stopwatch()
-        print(weighterobjects)
         if not istraining:
             self.remove = False
                 
@@ -477,15 +477,25 @@ class TrainData_DeepCSV(TrainData):
 
         
         print('remove nans')
-        x_global = np.where(np.isfinite(x_global), x_global, 0)
-        
+        x_global = np.where(np.isfinite(x_global)+(x_global < 100000.0), x_global, 0)
         return [x_global], [truth], []
     
     ## defines how to write out the prediction
     def writeOutPrediction(self, predicted, features, truth, weights, outfilename, inputfile):
         # predicted will be a list
-        
+        spectator_branches = ['jet_pt','jet_eta']
         from root_numpy import array2root
-        out = np.core.records.fromarrays(np.vstack( (predicted[0].transpose(),truth[0].transpose(), features[0][:,0:2].transpose() ) ),
+        if inputfile[-5:] == 'djctd':
+                        print("storing normed pt and eta... run on root files if you want something else for now")
+                        spectators = features[0][:,0:2].transpose()
+        else:
+            import uproot
+            print(inputfile)
+            urfile = uproot.open(inputfile)["deepntuplizer/tree"]
+            spectator_arrays = urfile.arrays(spectator_branches)
+            print(spectator_arrays)
+            spectators = [spectator_arrays[a.encode()] for a in spectator_branches]
+        
+        out = np.core.records.fromarrays(np.vstack( (predicted[0].transpose(),truth[0].transpose(), spectators) ),
                                          names='prob_isB, prob_isBB, prob_isC,prob_isUDSG,isB, isBB, isC,isUDSG,jet_pt, jet_eta')
         array2root(out, outfilename, 'tree')

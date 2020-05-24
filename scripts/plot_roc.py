@@ -40,7 +40,7 @@ if isDeepJet:
 else:
     listbranch = ['prob_isB', 'prob_isBB', 'prob_isC','prob_isUDSG','isB', 'isBB', 'isC','isUDSG','jet_pt', 'jet_eta']
 
-dirz = '/data/ml/ebols/DeepCSV_PredictionsTest_2/'
+dirz = '/data/ml/ebols/DeepCSV_PredictionsTest/'
 truthfile = open( dirz+'outfiles.txt','r')
 print("opened text file")
 rfile1 = ROOT.TChain("tree")
@@ -66,8 +66,8 @@ else:
     b_jets = df['isB']+df['isBB']
     disc = df['prob_isB']+df['prob_isBB']
     summed_truth = df['isB']+df['isBB']+df['isC']+df['isUDSG']
-    veto_c = (df['isC'] != 1) & (summed_truth != 0)
-    veto_udsg = (df['isUDSG'] != 1) & (summed_truth != 0)
+    veto_c = (df['isC'] != 1) & ( df['jet_pt'] > 30) & (summed_truth != 0)
+    veto_udsg = (df['isUDSG'] != 1) & ( df['jet_pt'] > 30) & (summed_truth != 0)
 
 
 f = ROOT.TFile("ROCS_DeepCSV.root", "recreate")
