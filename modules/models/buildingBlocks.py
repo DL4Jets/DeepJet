@@ -1,10 +1,12 @@
 '''
 standardised building blocks for the models
 '''
-
-from keras.layers import Dense, Dropout, Flatten,Convolution2D, Convolution1D
-from keras.layers.pooling import MaxPooling2D
-from keras.layers.normalization import BatchNormalization
+from keras.layers import Dense, Dropout, Flatten,Convolution2D, Convolution1D, Lambda, LeakyReLU,Reshape
+#from keras.layers.pooling import MaxPooling2D
+from keras.layers import MaxPool2D
+#from keras.layers.normalization import BatchNormalization
+from keras.layers import BatchNormalization
+from Layers import *
 
 def block_deepFlavourBTVConvolutions(charged,vertices,dropoutRate,active=True,batchnorm=False,batchmomentum=0.6):
     '''
@@ -105,6 +107,7 @@ def block_deepFlavourConvolutions(charged,neutrals,vertices,dropoutRate,active=T
 
     return cpf,npf,vtx
 
+
 def block_deepFlavourDense(x,dropoutRate,active=True,batchnorm=False,batchmomentum=0.6):
     if active:
         x=  Dense(200, activation='relu',kernel_initializer='lecun_uniform', name='df_dense0')(x)
@@ -139,37 +142,9 @@ def block_deepFlavourDense(x,dropoutRate,active=True,batchnorm=False,batchmoment
         if batchnorm:
             x = BatchNormalization(momentum=batchmomentum,name='df_dense_batchnorm7')(x)
         x = Dropout(dropoutRate,name='df_dense_dropout7')(x)
+
     else:
         x= Dense(1,kernel_initializer='zeros',trainable=False,name='df_dense_off')(x)
     
     return x
 
-
-
-
-def block_SchwartzImage(image,dropoutRate,active=True):
-    '''
-    returns flattened output
-    '''
-    
-    if active:
-        image =   Convolution2D(64, (8,8)  , border_mode='same', activation='relu',
-                                kernel_initializer='lecun_uniform', name='swz_conv0')(image)
-        image = MaxPooling2D(pool_size=(2, 2), name='swz_maxpool0')(image)
-        image = Dropout(dropoutRate)(image)
-        image =   Convolution2D(64, (4,4) , border_mode='same', activation='relu',
-                                kernel_initializer='lecun_uniform', name='swz_conv1')(image)
-        image = MaxPooling2D(pool_size=(2, 2), name='swz_maxpool1')(image)
-        image = Dropout(dropoutRate)(image)
-        image =   Convolution2D(64, (4,4)  , border_mode='same', activation='relu',
-                                kernel_initializer='lecun_uniform', name='swz_conv2')(image)
-        image = MaxPooling2D(pool_size=(2, 2), name='swz_maxpool2')(image)
-        image = Dropout(dropoutRate)(image)
-        image = Flatten()(image)
-
-    else:
-        #image=Cropping2D(crop)(image)#cut almost all of the 20x20 pixels
-        image = Flatten()(image)
-        image = Dense(1,kernel_initializer='zeros',trainable=False, name='swz_conv_off')(image)#effectively multipy by 0
-        
-    return image
