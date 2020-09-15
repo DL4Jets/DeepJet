@@ -6,7 +6,7 @@ This package depends on DeepJetCore 3.X (https://github.com/DL4Jets/DeepJetCore)
 Usage
 ==============
 
-After logging in, please source the environment (please cd to the directory first!):
+After logging in and setting up the DeepJetCore singularity environment, please source the DeepJet environment (please cd to the directory first!). 
 ```
 cd <your working dir>/DeepJet
 source env.sh
@@ -16,19 +16,17 @@ source env.sh
 The preparation for the training consists of the following steps
 ====
 
-- define the data structure for the training. The DeepJet datastructure is found in the modules directory as the class TrainData_DF.
+- define the data structure for the training. The DeepJet datastructure is found in the modules directory as the class TrainData_DF. DeepCSV is found as the class TrainData_DeepCSV
 
-- convert the root file to the data strucure for training using DeepJetCore tools:
+- convert the root file to the data strucure for training using DeepJetCore tools. The class argument should be TrainData_DF for DeepJet and TrainData_DeepCSV for DeepCSV:
   ```
     convertFromSource.py -i /path/to/the/root/ntuple/list_of_root_files.txt -o /output/path/that/needs/some/disk/space -c TrainData_DF
-      ```
+  ```
 
   This step can take a while.
 
 
-- prepare the training file and the model. Please refer to DeepJet/Train/train_DeepFlavour.py
-
-
+- prepare the training file and the model. Please refer to DeepJet/Train/train_DeepFlavour.py for training of DeepJet and DeepJet/Train/train_DeepCSV.py for DeepCSV.
 
 Training
 ====
@@ -53,7 +51,7 @@ Please close the session when the training is finished
 
 the training is launched in the following way:
 ```
-python train_DeepFlavour.py /path/to/the/output/of/convert/dataCollection.dc <output dir of your choice>
+python3 train_DeepFlavour.py /path/to/the/output/of/convert/dataCollection.djcdc <output dir of your choice>
 ```
 
 
