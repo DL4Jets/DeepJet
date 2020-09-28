@@ -5,6 +5,7 @@
 
 from DeepJetCore.training.training_base import training_base
 from DeepJetCore.modeltools import fixLayersContaining,printLayerInfosAndWeights
+import tensorflow as tf
 
 
 #also does all the parsing
@@ -21,7 +22,7 @@ if newtraining:
  
 train.compileModel(learningrate=0.003,
                    loss='categorical_crossentropy',
-                   metrics=['accuracy'])
+                   metrics=[tf.keras.metrics.Accuracy()])
     
 print(train.keras_model.summary())
 #printLayerInfosAndWeights(train.keras_model)

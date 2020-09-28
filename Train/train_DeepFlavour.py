@@ -1,6 +1,6 @@
 
 #import sys
-#import tensorflow as tf
+import tensorflow as tf
 #sys.modules["keras"] = tf.keras
 
 from DeepJetCore.training.training_base import training_base
@@ -21,7 +21,7 @@ if newtraining:
     
     train.compileModel(learningrate=0.001,
                        loss='categorical_crossentropy',
-                       metrics=['accuracy'])
+                       metrics=[tf.keras.metrics.Accuracy()])
 
 
     train.train_data.maxFilesOpen=1
@@ -41,7 +41,7 @@ if newtraining:
     train.keras_model=fixLayersContaining(train.keras_model, 'input_batchnorm')
 train.compileModel(learningrate=0.0001,
                    loss='categorical_crossentropy',
-                   metrics=['accuracy'])
+                   metrics=[tf.keras.metrics.Accuracy()])
     
 print(train.keras_model.summary())
 #printLayerInfosAndWeights(train.keras_model)
