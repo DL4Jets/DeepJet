@@ -1,8 +1,299 @@
-
-
 from DeepJetCore.TrainData import TrainData, fileTimeOut
 import numpy as np
 
+class TrainData_ParticleNet(TrainData):
+    def __init__(self):
+
+        TrainData.__init__(self)
+
+        
+        self.description = "ParticleNet inputs"
+        
+        self.truth_branches = ['isB','isBB','isGBB','isLeptonicB','isLeptonicB_C','isC','isGCC','isCC','isUD','isS','isG']
+        self.undefTruth=['isUndefined']
+        self.weightbranchX='jet_pt'
+        self.weightbranchY='jet_eta'
+        self.remove = True
+        self.referenceclass='flatten'  #Choose 'flatten' for flat or one of the truth branch for ref
+        self.red_classes = ['cat_B','cat_C','cat_UDS','cat_G'] #Reduced classes (flat only)
+        self.truth_red_fusion = [('isB','isBB','isGBB','isLeptonicB','isLeptonicB_C'),('isC','isGCC','isCC'),('isUD','isS'),('isG')] #Indicate here how you are making the fusion of your truth branches to the reduced classes for the flat reweighting
+        self.class_weights = [1.00,1.00,2.50,5.00]  #Ratio between our reduced classes (flat only)
+        self.weight_binX = np.array([15, 20, 26, 35, 46, 61, 80, 106, 141, 186, 247, 326, 432, 571, 756, 1000],dtype=float) #Flat reweighting
+        #self.weight_binX = np.array([10,25,30,35,40,45,50,60,75,100,125,150,175,200,250,300,400,500,600,2000],dtype=float) #Ref reweighting
+        self.weight_binY = np.array(
+            [-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5], dtype=float) #Flat reweighting
+        #self.weight_binY = np.array(
+         #   [-2.5, -2.0, -1.5, -1.0, -0.5, 0.5, 1.0, 1.5, 2.0, 2.5], dtype=float) #Ref reweighting
+
+        self.global_branches = ['jet_pt', 'jet_eta',
+                                'nCpfcand','nNpfcand',
+                                'nsv','npv',
+                                'TagVarCSV_trackSumJetEtRatio',
+                                'TagVarCSV_trackSumJetDeltaR',
+                                'TagVarCSV_vertexCategory',
+                                'TagVarCSV_trackSip2dValAboveCharm',
+                                'TagVarCSV_trackSip2dSigAboveCharm',
+                                'TagVarCSV_trackSip3dValAboveCharm',
+                                'TagVarCSV_trackSip3dSigAboveCharm',
+                                'TagVarCSV_jetNSelectedTracks',
+                                'TagVarCSV_jetNTracksEtaRel']
+                
+        
+        self.cpf_branches = ['Cpfcan_BtagPf_trackEtaRel',
+                             'Cpfcan_BtagPf_trackPtRel',
+                             'Cpfcan_BtagPf_trackPPar',
+                             'Cpfcan_BtagPf_trackDeltaR',
+                             'Cpfcan_BtagPf_trackPParRatio',
+                             'Cpfcan_BtagPf_trackSip2dVal',
+                             'Cpfcan_BtagPf_trackSip2dSig',
+                             'Cpfcan_BtagPf_trackSip3dVal',
+                             'Cpfcan_BtagPf_trackSip3dSig',
+                             'Cpfcan_BtagPf_trackJetDistVal',
+                             'Cpfcan_ptrel',
+                             'Cpfcan_drminsv',
+                             'Cpfcan_VTX_ass',
+                             'Cpfcan_puppiw',
+                             'Cpfcan_chi2',
+                             'Cpfcan_quality']
+        self.n_cpf = 25
+
+        self.npf_branches = ['Npfcan_ptrel', 'Npfcan_etarel', 'Npfcan_phirel', 'Npfcan_deltaR','Npfcan_isGamma','Npfcan_HadFrac','Npfcan_drminsv','Npfcan_puppiw']
+        self.n_npf = 25
+        
+        self.vtx_branches = ['sv_pt','sv_deltaR',
+                             'sv_mass',
+                             'sv_etarel',
+                             'sv_phirel',
+                             'sv_ntracks',
+                             'sv_chi2',
+                             'sv_normchi2',
+                             'sv_dxy',
+                             'sv_dxysig',
+                             'sv_d3d',
+                             'sv_d3dsig',
+                             'sv_costhetasvpv',
+                             'sv_enratio',
+        ]
+
+        self.n_vtx = 5
+        
+        self.cpf_pts_branches = ['Cpfcan_etarel',
+                                 'Cpfcan_phirel']
+        
+        self.npf_pts_branches = ['Npfcan_etarel', 
+                                 'Npfcan_phirel']
+        
+        self.vtx_pts_branches = ['sv_etarel',
+                                 'sv_phirel']
+
+        
+        self.reduced_truth = ['isB','isBB','isLeptonicB','isC','isUDS','isG']
+
+        
+    def createWeighterObjects(self, allsourcefiles):
+        # 
+        # Calculates the weights needed for flattening the pt/eta spectrum
+        
+        from DeepJetCore.Weighter import Weighter
+        weighter = Weighter()
+        weighter.undefTruth = self.undefTruth
+        weighter.class_weights = self.class_weights
+        branches = [self.weightbranchX,self.weightbranchY]
+        branches.extend(self.truth_branches)
+
+        if self.remove:
+            weighter.setBinningAndClasses(
+                [self.weight_binX,self.weight_binY],
+                self.weightbranchX,self.weightbranchY,
+                self.truth_branches, self.red_classes, 
+                self.truth_red_fusion, method = self.referenceclass
+            )
+
+        
+        counter=0
+        import ROOT
+        from root_numpy import tree2array, root2array
+        if self.remove:
+            for fname in allsourcefiles:
+                fileTimeOut(fname, 120)
+                nparray = root2array(
+                    fname,
+                    treename = "deepntuplizer/tree",
+                    stop = None,
+                    branches = branches
+                )
+                norm_hist = True
+                if self.referenceclass == 'flatten':
+                    norm_hist = False
+                weighter.addDistributions(nparray, norm_h = norm_hist)
+                #del nparray
+                counter=counter+1
+            weighter.createRemoveProbabilitiesAndWeights(self.referenceclass)
+            #weighter.printHistos('/afs/cern.ch/user/a/ademoor/Flatten/') #If you need to print the 2D histo, choose your output dir
+            return {'weigther':weighter}
+    
+    def convertFromSourceFile(self, filename, weighterobjects, istraining):
+
+        # Function to produce the numpy training arrays from root files
+
+        from DeepJetCore.Weighter import Weighter
+        from DeepJetCore.stopwatch import stopwatch
+        sw=stopwatch()
+        swall=stopwatch()
+        if not istraining:
+            self.remove = False
+        
+        def reduceTruth(uproot_arrays):
+            
+            b = uproot_arrays[b'isB']
+            
+            bb = uproot_arrays[b'isBB']
+            gbb = uproot_arrays[b'isGBB']
+            
+            bl = uproot_arrays[b'isLeptonicB']
+            blc = uproot_arrays[b'isLeptonicB_C']
+            lepb = bl+blc
+            
+            c = uproot_arrays[b'isC']
+            cc = uproot_arrays[b'isCC']
+            gcc = uproot_arrays[b'isGCC']
+            
+            ud = uproot_arrays[b'isUD']
+            s = uproot_arrays[b'isS']
+            uds = ud+s
+            
+            g = uproot_arrays[b'isG']
+            
+            return np.vstack((b,bb+gbb,lepb,c+cc+gcc,uds,g)).transpose()
+        
+        print('reading '+filename)
+        
+        import ROOT
+        from root_numpy import tree2array, root2array
+        fileTimeOut(filename,120) #give eos a minute to recover
+        rfile = ROOT.TFile(filename)
+        tree = rfile.Get("deepntuplizer/tree")
+        self.nsamples = tree.GetEntries()
+
+        
+        # user code, example works with the example 2D images in root format generated by make_example_data
+        from DeepJetCore.preprocessing import MeanNormZeroPad,MeanNormZeroPadParticles
+        
+        x_global = MeanNormZeroPad(filename,None,
+                                   [self.global_branches],
+                                   [1],self.nsamples)
+
+        x_cpf = MeanNormZeroPadParticles(filename,None,
+                                   self.cpf_branches,
+                                   self.n_cpf,self.nsamples)
+
+        x_npf = MeanNormZeroPadParticles(filename,None,
+                                         self.npf_branches,
+                                         self.n_npf,self.nsamples)
+
+        x_vtx = MeanNormZeroPadParticles(filename,None,
+                                         self.vtx_branches,
+                                         self.n_vtx,self.nsamples)
+        
+        cpf_pts = MeanNormZeroPadParticles(filename,None,
+                                         self.cpf_pts_branches,
+                                         self.n_cpf,self.nsamples)
+        
+        npf_pts = MeanNormZeroPadParticles(filename,None,
+                                         self.npf_pts_branches,
+                                         self.n_npf,self.nsamples)
+        
+        vtx_pts = MeanNormZeroPadParticles(filename,None,
+                                         self.vtx_pts_branches,
+                                         self.n_vtx,self.nsamples)
+
+        import uproot3 as uproot
+        urfile = uproot.open(filename)["deepntuplizer/tree"]
+        truth_arrays = urfile.arrays(self.truth_branches)
+        truth = reduceTruth(truth_arrays)
+        truth = truth.astype(dtype='float32', order='C') #important, float32 and C-type!
+
+        x_global = x_global.astype(dtype='float32', order='C')
+        x_cpf = x_cpf.astype(dtype='float32', order='C')
+        x_npf = x_npf.astype(dtype='float32', order='C')
+        x_vtx = x_vtx.astype(dtype='float32', order='C')
+        cpf_pts = cpf_pts.astype(dtype='float32', order='C')
+        npf_pts = npf_pts.astype(dtype='float32', order='C')
+        vtx_pts = vtx_pts.astype(dtype='float32', order='C')
+        
+        if self.remove:
+            b = [self.weightbranchX,self.weightbranchY]
+            b.extend(self.truth_branches)
+            b.extend(self.undefTruth)
+            fileTimeOut(filename, 120)
+            for_remove = root2array(
+                filename,
+                treename = "deepntuplizer/tree",
+                stop = None,
+                branches = b
+            )
+            notremoves=weighterobjects['weigther'].createNotRemoveIndices(for_remove)
+            undef=for_remove['isUndefined']
+            notremoves-=undef
+            print('took ', sw.getAndReset(), ' to create remove indices')
+
+
+        if self.remove:
+            print('remove')
+            x_global=x_global[notremoves > 0]
+            x_cpf=x_cpf[notremoves > 0]
+            x_npf=x_npf[notremoves > 0]
+            x_vtx=x_vtx[notremoves > 0]
+            cpf_pts=cpf_pts[notremoves > 0]
+            npf_pts=npf_pts[notremoves > 0]
+            vtx_pts=vtx_pts[notremoves > 0]
+            truth=truth[notremoves > 0]
+
+        newnsamp=x_global.shape[0]
+        print('reduced content to ', int(float(newnsamp)/float(self.nsamples)*100),'%')
+
+        
+        print('remove nans')
+        x_global = np.where(np.isfinite(x_global) , x_global, 0)
+        x_cpf = np.where(np.isfinite(x_cpf), x_cpf, 0)
+        x_npf = np.where(np.isfinite(x_npf), x_npf, 0)
+        x_vtx = np.where(np.isfinite(x_vtx), x_vtx, 0)
+        cpf_pts = np.where(np.isfinite(cpf_pts), cpf_pts, 0)
+        npf_pts = np.where(np.isfinite(npf_pts), npf_pts, 0)
+        vtx_pts = np.where(np.isfinite(vtx_pts), vtx_pts, 0)
+        
+        return [x_global,x_cpf,x_npf,x_vtx, cpf_pts, npf_pts, vtx_pts], [truth], []
+
+    ## defines how to write out the prediction
+    def writeOutPrediction(self, predicted, features, truth, weights, outfilename, inputfile):
+        # predicted will be a list
+        
+        from root_numpy import array2root
+        out = np.core.records.fromarrays(np.vstack( (predicted[0].transpose(),truth[0].transpose(), features[0][:,0:2].transpose() ) ),
+                                         names='prob_isB, prob_isBB,prob_isLeptB, prob_isC,prob_isUDS,prob_isG,isB, isBB, isLeptB, isC,isUDS,isG,jet_pt, jet_eta')
+        array2root(out, outfilename, 'tree')
+
+    ### This back up code is available if you don't define global vars of your jet, with pt and eta as first variables, as inputs ### 
+
+    # defines how to write out the prediction
+    #def writeOutPrediction(self, predicted, features, truth, weights, outfilename, inputfile):
+     #   # predicted will be a list
+      #  spectator_branches = ['jet_pt','jet_eta']
+       # from root_numpy import array2root
+        #if inputfile[-5:] == 'djctd':
+         #               print("storing normed pt and eta... run on root files if you want something else for now")
+          #              spectators = features[0][:,0:2].transpose()
+        #else:
+         #   import uproot3 as uproot
+          #  print(inputfile)
+           # urfile = uproot.open(inputfile)["deepntuplizer/tree"]
+            #spectator_arrays = urfile.arrays(spectator_branches)
+           # print(spectator_arrays)
+            #spectators = [spectator_arrays[a.encode()] for a in spectator_branches]
+        
+        #out = np.core.records.fromarrays(np.vstack( (predicted[0].transpose(),truth[0].transpose(), spectators) ),
+         #                                names='prob_isB, prob_isC,prob_isUDS,prob_isG,isB,isC,isUDS,isG,jet_pt,jet_eta')
+        #array2root(out, outfilename, 'tree')
 
 class TrainData_DF(TrainData):
     def __init__(self):
@@ -182,7 +473,7 @@ class TrainData_DF(TrainData):
 
         
         
-        import uproot
+        import uproot3 as uproot
         urfile = uproot.open(filename)["deepntuplizer/tree"]
         truth_arrays = urfile.arrays(self.truth_branches)
         truth = reduceTruth(truth_arrays)
@@ -387,7 +678,7 @@ class TrainData_DeepCSV(TrainData):
         nparray = self.readTreeFromRootToTuple(allsourcefiles,branches=self.vtx_branches+self.eta_rel_branches+self.track_branches+self.global_branches, limit=500000)
         for a in (self.vtx_branches+self.eta_rel_branches+self.track_branches+self.global_branches):
             for b in range(len(nparray[a])):
-                nparray[a][b] = np.where(np.isfinite(nparray[a][b])+np.abs(nparray[a][b]) < 100000.0, nparray[a][b], 0)
+                nparray[a][b] = np.where(nparray[a][b] < 100000.0, nparray[a][b], 0)
         means = np.array([],dtype='float32')
         if len(nparray):
             means = meanNormProd(nparray)
@@ -441,7 +732,7 @@ class TrainData_DeepCSV(TrainData):
                                    [self.global_branches,self.track_branches,self.eta_rel_branches,self.vtx_branches],
                                    [1,self.n_track,self.n_eta_rel,self.n_vtx],self.nsamples)
                 
-        import uproot
+        import uproot3 as uproot
         urfile = uproot.open(filename)["deepntuplizer/tree"]
         truth_arrays = urfile.arrays(self.truth_branches)
         truth = reduceTruth(truth_arrays)
@@ -477,7 +768,7 @@ class TrainData_DeepCSV(TrainData):
 
         
         print('remove nans')
-        x_global = np.where(np.isfinite(x_global)+(np.abs(x_global) < 100000.0), x_global, 0)
+        x_global = np.where(np.isfinite(x_global)+(x_global < 100000.0), x_global, 0)
         return [x_global], [truth], []
     
     ## defines how to write out the prediction
@@ -489,7 +780,7 @@ class TrainData_DeepCSV(TrainData):
                         print("storing normed pt and eta... run on root files if you want something else for now")
                         spectators = features[0][:,0:2].transpose()
         else:
-            import uproot
+            import uproot3 as uproot
             print(inputfile)
             urfile = uproot.open(inputfile)["deepntuplizer/tree"]
             spectator_arrays = urfile.arrays(spectator_branches)
