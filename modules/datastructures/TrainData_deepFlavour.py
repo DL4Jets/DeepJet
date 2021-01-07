@@ -5,7 +5,6 @@ class TrainData_ParticleNet(TrainData):
     def __init__(self):
 
         TrainData.__init__(self)
-
         
         self.description = "ParticleNet inputs"
         
@@ -38,7 +37,6 @@ class TrainData_ParticleNet(TrainData):
                                 'TagVarCSV_jetNSelectedTracks',
                                 'TagVarCSV_jetNTracksEtaRel']
                 
-        
         self.cpf_branches = ['Cpfcan_BtagPf_trackEtaRel',
                              'Cpfcan_BtagPf_trackPtRel',
                              'Cpfcan_BtagPf_trackPPar',
@@ -72,8 +70,7 @@ class TrainData_ParticleNet(TrainData):
                              'sv_d3d',
                              'sv_d3dsig',
                              'sv_costhetasvpv',
-                             'sv_enratio',
-        ]
+                             'sv_enratio']
 
         self.n_vtx = 5
         
