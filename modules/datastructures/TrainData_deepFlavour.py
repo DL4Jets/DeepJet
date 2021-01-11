@@ -388,7 +388,7 @@ class TrainData_DeepCSV(TrainData):
         nparray = self.readTreeFromRootToTuple(allsourcefiles,branches=self.vtx_branches+self.eta_rel_branches+self.track_branches+self.global_branches, limit=500000)
         for a in (self.vtx_branches+self.eta_rel_branches+self.track_branches+self.global_branches):
             for b in range(len(nparray[a])):
-                nparray[a][b] = np.where(np.isfinite(nparray[a][b])+np.abs(nparray[a][b]) < 100000.0, nparray[a][b], 0)
+                nparray[a][b] = np.where(np.logical_and(np.isfinite(nparray[a][b]),np.abs(nparray[a][b]) < 100000.0), nparray[a][b], 0)
         means = np.array([],dtype='float32')
         if len(nparray):
             means = meanNormProd(nparray)
@@ -475,7 +475,7 @@ class TrainData_DeepCSV(TrainData):
         print('reduced content to ', int(float(newnsamp)/float(self.nsamples)*100),'%')
         
         print('remove nans')
-        x_global = np.where(np.isfinite(x_global)+(np.abs(x_global) < 100000.0), x_global, 0)
+        x_global = np.where(np.logical_and(np.isfinite(x_global), (np.abs(x_global) < 100000.0)), x_global, 0)
         return [x_global], [truth], []
     
     ## defines how to write out the prediction
