@@ -380,8 +380,6 @@ class TrainData_DeepCSV(TrainData):
                 #del nparray
                 counter=counter+1
             weighter.createRemoveProbabilitiesAndWeights(self.referenceclass)
-            #weighter.printHistos('/afs/cern.ch/user/a/ademoor/Flatten/') #If you need to print the 2D histo, choose your output dir
-            return {'weigther':weighter}
 
         print("calculate means")
         from DeepJetCore.preprocessing import meanNormProd
